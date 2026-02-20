@@ -7,8 +7,7 @@
   }
 
   .main-title {
-    font-size: 24px;             /* ピンク色（キャンディっぽく） */
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1); /* 軽い影で立体感を出す */
+    font-size: 24px;
   }
 
 .main-start-button {
