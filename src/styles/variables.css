@@ -1,0 +1,27 @@
+:root {
+  /* パステルカラー */
+  --color-pink: #FFB6C1;
+  --color-lavender: #E6D5FF;
+  --color-mint: #D5F5E6;
+  --color-pastel-blue: #B6E5D8;
+  --color-pastel-purple: #DDA0DD;
+  
+  /* テキストカラー */
+  --color-text-dark: #4A4A4A;
+  --color-text-light: #FFFFFF;
+  
+  /* ボタンカラー */
+  --color-button-pink: #FF6B9D;
+  --color-button-blue: #87CEEB;
+  --color-button-purple: #9370DB;
+  
+  /* フォントサイズ */
+  --font-size-large: 48px;
+  --font-size-medium: 24px;
+  --font-size-small: 16px;
+  
+  /* スペーシング */
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 32px;
+}

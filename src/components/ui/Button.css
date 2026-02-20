@@ -1,0 +1,70 @@
+.button {
+  padding: var(--spacing-medium) var(--spacing-large);
+  font-size: var(--font-size-medium);
+  font-family: 'Zen Maru Gothic', sans-serif;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-small);
+  min-width: 200px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.button:hover:not(:disabled) {
+  transform: scale(1.05);
+  animation: bounce 0.3s ease;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1.05) translateY(0); }
+  50% { transform: scale(1.05) translateY(-3px); }
+}
+
+.button-pink {
+  background: var(--color-button-pink);
+  color: var(--color-text-light);
+}
+
+.button-blue {
+  background: var(--color-button-blue);
+  color: var(--color-text-light);
+}
+
+.button-purple {
+  background: var(--color-button-purple);
+  color: var(--color-text-light);
+}
+
+.button-primary {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: var(--color-text-light);
+  font-weight: bold;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 10px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 215, 0, 0.8); }
+}
+
+.button.selected {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.button-icon {
+  font-size: 24px;
+}

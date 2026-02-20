@@ -1,0 +1,32 @@
+.score-board {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-large);
+  padding: var(--spacing-medium);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-small);
+}
+
+.score-icon {
+  font-size: 32px;
+}
+
+.score-value {
+  font-size: var(--font-size-large);
+  font-weight: bold;
+  color: var(--color-text-dark);
+}
+
+.score-divider {
+  font-size: var(--font-size-medium);
+  color: var(--color-text-dark);
+  font-weight: bold;
+}
