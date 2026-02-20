@@ -3,11 +3,15 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-large);
+    
   }
 
+  .main-title {
+    font-size: 24px;             /* ピンク色（キャンディっぽく） */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1); /* 軽い影で立体感を出す */
+  }
 
-
-.start-button {
+.main-start-button {
     display: flex;
     justify-content: center;
     align-items: center;

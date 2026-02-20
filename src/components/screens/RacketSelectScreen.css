@@ -43,7 +43,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 3px solid transparent;
   padding-bottom: 16px;
-  margin-right: 24px;
+  margin-right: 32px;
 }
 
 .racket-card:hover {
@@ -79,6 +79,6 @@
 }
 
 .decision-button{
-  margin-top: 16px;
+  margin-top: 40px;
 }
 

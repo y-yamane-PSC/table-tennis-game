@@ -61,7 +61,8 @@ function DifficultyScreen() {
   return (
     <div className="home-screen">
       <div className="home-header">
-        <h1 className="title">ミラクル・ラリー！キャンディ・マジック✨</h1>
+        <h1 className="title">むずかしさを えらんでね
+        </h1>
       </div>
       
       <div className="home-main">

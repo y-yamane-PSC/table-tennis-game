@@ -31,12 +31,12 @@ function HomeScreen() {
     
     return (
         <div className="home-main">
-            <h1 className="title">ミラクル・ラリー！キャンディ・マジック✨</h1>
+            <h1 className="main-title">ミラクル・ラリー！キャンディ・マジック✨</h1>
 
             <Button
             variant="primary"
             onClick={handleStart}
-            className="start-button"
+            className="main-start-button"
             >
             スタート
             </Button>

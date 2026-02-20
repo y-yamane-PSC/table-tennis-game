@@ -59,7 +59,7 @@ function RacketSelectScreen() {
   }, [selectedRacket]);
 
   const racketDescriptions: Record<RacketType, string> = {
-    normal: 'バランスの良い性能',
+    normal: 'バランスの良い性能←初めての方にオススメ',
     speed: 'スマッシュの速度が1.2倍になるが当たり判定が20%低下',
     wide: '当たり判定が1.2倍になるが移動速度が20%低下',
   };
