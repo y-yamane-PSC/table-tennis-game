@@ -67,7 +67,7 @@ function RacketSelectScreen() {
   return (
     <div className="racket-select-screen">
       <div className="racket-select-header">
-        <h2>ラケットを えらんでね</h2>
+        <h1>ラケットを えらんでね</h1>
       </div>
       
       <div className="racket-select-main">
@@ -76,6 +76,11 @@ function RacketSelectScreen() {
             className={`racket-card ${selectedRacket === 'normal' ? 'selected' : ''}`}
             onClick={() => handleRacketSelect('normal')}
           >
+            <img
+              src="/images/normal.png"
+              alt="ノーマルラケット"
+              className='racket-img'
+            />
             <h3>ノーマルラケット</h3>
             <p>{racketDescriptions.normal}</p>
           </div>
@@ -84,6 +89,11 @@ function RacketSelectScreen() {
             className={`racket-card ${selectedRacket === 'speed' ? 'selected' : ''}`}
             onClick={() => handleRacketSelect('speed')}
           >
+            <img
+              src="/images/speed.png"
+              alt="スピードラケット"
+               className='racket-img'
+            />
             <h3>スピードラケット</h3>
             <p>{racketDescriptions.speed}</p>
           </div>
@@ -92,6 +102,11 @@ function RacketSelectScreen() {
             className={`racket-card ${selectedRacket === 'wide' ? 'selected' : ''}`}
             onClick={() => handleRacketSelect('wide')}
           >
+            <img
+              src="/images/wide.png"
+              alt="ワイドラケット"
+              className='racket-img'
+            />
             <h3>ワイドラケット</h3>
             <p>{racketDescriptions.wide}</p>
           </div>
@@ -100,6 +115,7 @@ function RacketSelectScreen() {
         <Button
           variant="primary"
           onClick={handleConfirm}
+          className="decision-button"
         >
           けってい
         </Button>

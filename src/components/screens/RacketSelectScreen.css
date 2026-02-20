@@ -11,6 +11,7 @@
 .racket-select-header {
   text-align: center;
   margin-bottom: var(--spacing-large);
+  padding-bottom: 16px;
 }
 
 .racket-select-header h2 {
@@ -33,14 +34,16 @@
 }
 
 .racket-card {
-  background: white;
   border-radius: 20px;
   padding: var(--spacing-large);
-  min-width: 250px;
+  min-width: 380px;
+  min-height: 400px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 3px solid transparent;
+  padding-bottom: 16px;
+  margin-right: 24px;
 }
 
 .racket-card:hover {
@@ -65,3 +68,17 @@
   color: var(--color-text-dark);
   line-height: 1.5;
 }
+
+.racket-img{
+  width: 300px;
+  height: auto;
+  text-align: center;
+  border-radius: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.decision-button{
+  margin-top: 16px;
+}
+
