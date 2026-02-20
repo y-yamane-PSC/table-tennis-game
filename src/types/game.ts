@@ -4,7 +4,7 @@ export type RacketType = 'normal' | 'speed' | 'wide';
 
 export type BallType = 'normal' | 'strawberry' | 'heart' | 'star' | 'candy' | 'ribbon';
 
-export type Screen = 'home' | 'racketSelect' | 'game' | 'result';
+export type Screen = 'home' | 'difficulty'| 'racketSelect' | 'game' | 'result';
 
 export interface GameConfig {
   difficulty: Difficulty;

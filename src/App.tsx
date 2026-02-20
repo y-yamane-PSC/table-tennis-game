@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { ScreenContext } from './contexts/ScreenContext';
 import { GameContext } from './contexts/GameContext';
 import HomeScreen from './components/screens/HomeScreen';
+import DifficultyScreen from './components/screens/DifficultyScreen'
 import RacketSelectScreen from './components/screens/RacketSelectScreen';
 import GameScreen from './components/screens/GameScreen';
 import ResultScreen from './components/screens/ResultScreen';
@@ -49,6 +50,7 @@ function App() {
         setConfig: handleSetConfig
       }}>
         {currentScreen === 'home' && <HomeScreen />}
+        {currentScreen === 'difficulty' && <DifficultyScreen />}
         {currentScreen === 'racketSelect' && <RacketSelectScreen />}
         {currentScreen === 'game' && <GameScreen />}
         {currentScreen === 'result' && <ResultScreen />}

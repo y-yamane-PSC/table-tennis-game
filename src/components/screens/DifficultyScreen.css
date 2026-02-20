@@ -1,0 +1,87 @@
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--spacing-large);
+  gap: var(--spacing-large);
+  width: 100vw;
+  box-sizing: border-box;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: var(--spacing-large);
+  font-size: 30px;
+}
+
+.title {
+  font-size: var(--font-size-large);
+  color: var(--color-text-dark);
+  margin-bottom: var(--spacing-small);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  padding-bottom: 16px;
+}
+
+/* .title-decoration {
+  display: inline-block;
+  flex-direction: row;
+  vertical-align: middle;
+  font-size: 32px;
+  animation: sparkle 2s ease-in-out infinite;
+  margin-left: 8px;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+} */
+
+.home-main {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-large);
+}
+
+.difficulty-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.difficulty-buttons .button {
+  min-width: 130px; /* 以前より横幅を短く */
+  max-width: 150px;
+}
+
+.start-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px auto 0 auto; /* 上部に余白を追加 */
+  width: fit-content;
+  text-align: center;
+  gap: 32px 0px;
+}
+
+.back-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px auto 0 auto; /* 上部に余白を追加 */
+  width: fit-content;
+  text-align: center;
+  gap: 32px 0px;
+}
+
+.home-footer {
+  margin-top: var(--spacing-large);
+  text-align: center;
+  color: var(--color-text-dark);
+  font-size: var(--font-size-small);
+  padding-top: 20px;
+}

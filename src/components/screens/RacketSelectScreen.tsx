@@ -25,6 +25,16 @@ function RacketSelectScreen() {
     navigateTo('game');
   };
 
+  const handleBack = () => {
+    setGameState(prev => ({
+      ...prev,
+      config: {
+        ...prev.config,
+      },
+    }));
+    navigateTo('difficulty');
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -92,6 +102,13 @@ function RacketSelectScreen() {
           onClick={handleConfirm}
         >
           けってい
+        </Button>
+        <Button
+          variant='primary'
+          onClick={handleBack}
+          className="back-button"
+        >
+          もどる
         </Button>
       </div>
     </div>
