@@ -4,8 +4,8 @@ export const CANVAS_HEIGHT = 720;
 export const BALL_BASE_SPEED = 5;
 export const BALL_RADIUS = 10;
 
-export const PADDLE_BASE_WIDTH = 20;
-export const PADDLE_BASE_HEIGHT = 80;
+export const RACKET_BASE_WIDTH = 20;
+export const RACKET_BASE_HEIGHT = 80;
 
 export const SMASH_DISTANCE = 100;
 export const SMASH_SPEED_MULTIPLIER = 1.5;
