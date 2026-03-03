@@ -32,6 +32,7 @@ export interface Ball {
   radius: number;
   type: BallType;
   isReal: boolean;          // ハートボールの本物判定用
+  effectRemainingRallies: number; // 効果の残りラリー数
 }
 
 export const RACKET_STATS: Record<RacketType, RacketStats> = {
@@ -68,7 +69,6 @@ export interface GameState {
   isPaused: boolean;
   config: GameConfig;
 }
-
 
 
 export interface GameSettings {

@@ -5,15 +5,20 @@ import { useGame } from '../contexts/GameContext';
 export function useBallEffects() {
   const { gameState } = useGame();
 
-  const processBallEffects = useCallback((ball: Ball, player: Racket, cpu: Racket) => {
+  const processBallEffects = useCallback((ball: Ball) => {
+    // 1. 元のボールをコピー（不変性を保つため）
+    const nextBall = { ...ball };
     // 5の倍数のラリーでボールをランダムに変化させる
     if (gameState.rallyCount > 0 && gameState.rallyCount % 5 === 0) {
       const types: BallType[] = ['strawberry', 'heart', 'star', 'candy', 'ribbon'];
-      ball.type = types[Math.floor(Math.random() * types.length)];
+      nextBall.type = types[Math.floor(Math.random() * types.length)];
+
+      // 効果の継続ラリー数を設定
+      nextBall.effectRemainingRallies = (nextBall.type === 'strawberry' || nextBall.type === 'candy') ? 2 : 1;
     }
 
     // 各ボールの効果適用
-    switch (ball.type) {
+    switch (nextBall.type) {
       case 'strawberry':
         // 打ったプレイヤーの当たり判定を1.2倍にする
         // 画面に「ボールがうちやすくなったよ！」と表示（MessageDisplayと連動）
@@ -31,7 +36,9 @@ export function useBallEffects() {
         // バウンド時に左右斜め45度にランダム変化
         break;
     }
-  }, [gameState.rallyCount]);
+  // 4. 重要：修正された新しいボールオブジェクトを返す
+  return nextBall; 
+}, [gameState.rallyCount]);
 
   return { processBallEffects };
 }

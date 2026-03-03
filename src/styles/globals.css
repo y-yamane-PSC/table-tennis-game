@@ -20,3 +20,10 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+.game-canvas {
+  background-color: #FFF; /* 万が一Canvasが透明でも背景を白に */
+  border: 4px solid #FFB6C1; /* 枠線をつけて存在を確認 */
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
