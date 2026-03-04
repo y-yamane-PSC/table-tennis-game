@@ -31,7 +31,8 @@ export function useCollision() {
     vy: 2,
     radius: BALL_RADIUS,
     type: 'normal',
-    isReal: true
+    isReal: true,
+    effectRemainingRallies: 0, 
   });
 
   const updatePhysics = useCallback((ball: Ball, player: Racket, cpu: Racket, deltaTime: number) => {

@@ -78,22 +78,29 @@ const GameCanvas: React.FC = () => {
     const followSpeed = difficultySettings[gameState.config.difficulty];
     setCpuRacket((prev) => updateCpuRacket(prev, ball.y, followSpeed, deltaTime));
 
-    // --- ボールの物理演算実行 ---
+    // --- ボールの物理演算 (ここが updatePhysics の中身になります) ---
     setBall((prevBall) => {
       let nextBall = { ...prevBall };
+      
+      // ボールの移動
       nextBall.x += nextBall.vx;
       nextBall.y += nextBall.vy;
 
       // 1. 上下の壁バウンド
-      if (nextBall.y - nextBall.radius < 0 || nextBall.y + nextBall.radius > CANVAS_HEIGHT) {
+      if (nextBall.y - nextBall.radius < 0) {
+        nextBall.y = nextBall.radius;
+        nextBall.vy *= -1;
+      } else if (nextBall.y + nextBall.radius > CANVAS_HEIGHT) {
+        nextBall.y = CANVAS_HEIGHT - nextBall.radius;
         nextBall.vy *= -1;
       }
 
       // 2. プレイヤーラケットとの衝突判定
       if (checkRacketCollision(nextBall, playerRacket)) {
+        nextBall.vx = Math.abs(nextBall.vx) * 1.05; // 反射して加速
         nextBall.x = playerRacket.x + playerRacket.width + nextBall.radius; // めり込み防止
-        nextBall.vx = Math.abs(nextBall.vx) * 1.05; // 少し加速して右方向へ
         
+        // ラリー加算とボール変化判定
         dispatch({ type: 'INCREMENT_RALLY' });
         createHitParticles(nextBall.x, nextBall.y, 'star');
         
@@ -102,35 +109,36 @@ const GameCanvas: React.FC = () => {
         }
       }
 
-      // 3. CPUラケットとの衝突判定 
+      // 3. CPUラケットとの衝突判定
       if (checkRacketCollision(nextBall, cpuRacket)) {
+        nextBall.vx = -Math.abs(nextBall.vx) * 1.05; // 反射して加速
         nextBall.x = cpuRacket.x - nextBall.radius; // めり込み防止
-        nextBall.vx = -Math.abs(nextBall.vx) * 1.05; // 左方向へ
         createHitParticles(nextBall.x, nextBall.y, 'normal');
       }
 
-      // 4. 得点判定 
+      // 4. 得点判定
       if (nextBall.x < 0) {
         dispatch({ type: 'INCREMENT_CPU_SCORE' });
-        return resetBall('player'); // 次はプレイヤーから
+        return resetBall(); // ボールを中央へリセット
       } else if (nextBall.x > CANVAS_WIDTH) {
         dispatch({ type: 'INCREMENT_PLAYER_SCORE' });
-        return resetBall('cpu');
+        return resetBall();
       }
 
       return nextBall;
     });
 
+    // パーティクル更新と描画
     updateParticles(deltaTime);
-    draw();
+    draw(); 
   });
 
-  // ボールのリセット関数 (追加)
-  const resetBall = (serveTo: 'player' | 'cpu'): Ball => ({
+  // ボールのリセット関数を定義
+  const resetBall = (): Ball => ({
     x: CANVAS_WIDTH / 2,
     y: CANVAS_HEIGHT / 2,
-    vx: serveTo === 'player' ? 5 : -5,
-    vy: (Math.random() - 0.5) * 10,
+    vx: Math.random() > 0.5 ? 5 : -5,
+    vy: (Math.random() - 0.5) * 6,
     radius: BALL_RADIUS,
     type: 'normal',
     isReal: true,
