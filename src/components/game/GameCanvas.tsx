@@ -29,7 +29,7 @@ export const checkRacketCollision = (ball: Ball, racket: Racket): boolean => {
 
 const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, dispatch } = useGame();
+  const { gameState, setGameState } = useGame();
   const input = useInput();
   const { particles, createHitParticles, updateParticles } = useParticles();
   const { processBallEffects } = useBallEffects();
@@ -68,10 +68,19 @@ const GameCanvas: React.FC = () => {
 
   // --- 2. ゲームループ ---
   useGameLoop((deltaTime) => {
-    if (!gameState.isGameActive || gameState.isPaused) return;
+    if (!gameState.isGameActive || gameState.isPaused) {
+      draw();
+      return;
+    }
 
     // プレイヤーの移動
-    setPlayerRacket((prev) => updatePlayerRacket(prev, input, deltaTime));
+    const currentInput = {
+      left: input.current['ArrowLeft'] || false,
+      right: input.current['ArrowRight'] || false,
+      up: input.current['ArrowUp'] || false,
+      down: input.current['ArrowDown'] || false,
+    };
+    setPlayerRacket((prev) => updatePlayerRacket(prev, currentInput, deltaTime));
 
     // CPUの自動追従
     const difficultySettings = { easy: 0.5, normal: 0.8, hard: 1.0 };
@@ -101,7 +110,7 @@ const GameCanvas: React.FC = () => {
         nextBall.x = playerRacket.x + playerRacket.width + nextBall.radius; // めり込み防止
         
         // ラリー加算とボール変化判定
-        dispatch({ type: 'INCREMENT_RALLY' });
+        setGameState(prev => ({ ...prev, rallyCount: prev.rallyCount + 1 }));
         createHitParticles(nextBall.x, nextBall.y, 'star');
         
         if ((gameState.rallyCount + 1) % 5 === 0) {
@@ -118,10 +127,10 @@ const GameCanvas: React.FC = () => {
 
       // 4. 得点判定
       if (nextBall.x < 0) {
-        dispatch({ type: 'INCREMENT_CPU_SCORE' });
+        setGameState(prev => ({ ...prev, cpuScore: prev.cpuScore + 1, rallyCount: 0 }));
         return resetBall(); // ボールを中央へリセット
       } else if (nextBall.x > CANVAS_WIDTH) {
-        dispatch({ type: 'INCREMENT_PLAYER_SCORE' });
+        setGameState(prev => ({ ...prev, playerScore: prev.playerScore + 1, rallyCount: 0 }));
         return resetBall();
       }
 
@@ -189,29 +198,29 @@ const GameCanvas: React.FC = () => {
   const drawRacket = (ctx: CanvasRenderingContext2D, racket: Racket, color: string, isPlayer: boolean) => {
     ctx.save();
     // ラケット本体（角丸の長方形）
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.roundRect(racket.x, racket.y, racket.width, racket.height, 10);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(racket.x, racket.y, racket.width, racket.height, 10);
     ctx.fill();
     
     // プレイヤー専用の装飾（リボン）
-  if (isPlayer) {
-    ctx.fillStyle = '#FF69B4'; // リボン用の濃いピンク
-    // 右持ちか左持ちかでリボンの位置を調整
-    const ribbonX = racket.isRightHanded ? racket.x + racket.width : racket.x;
-    
-    // 簡易的なリボンの形状
-    ctx.beginPath();
-    ctx.arc(ribbonX, racket.y + 10, 8, 0, Math.PI * 2); // 上の輪
-    ctx.arc(ribbonX, racket.y + 25, 8, 0, Math.PI * 2); // 下の輪
-    ctx.fill();
-    
-    // 中央の結び目
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(ribbonX - 3, racket.y + 15, 6, 6);
-  }
+    if (isPlayer) {
+      ctx.fillStyle = '#FF69B4'; // リボン用の濃いピンク
+      // 右持ちか左持ちかでリボンの位置を調整
+      const ribbonX = racket.isRightHanded ? racket.x + racket.width : racket.x;
+      
+      // 簡易的なリボンの形状 (racket.yに追従するよう修正)
+      ctx.beginPath();
+      ctx.arc(ribbonX, racket.y + 10, 8, 0, Math.PI * 2); // 上の輪
+      ctx.arc(ribbonX, racket.y + 25, 8, 0, Math.PI * 2); // 下の輪
+      ctx.fill();
+      
+      // 中央の結び目
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ribbonX - 3, racket.y + 15, 6, 6);
+    }
   
-  ctx.restore();
+    ctx.restore();
   };
 
   const drawBall = (ctx: CanvasRenderingContext2D, ball: Ball) => {

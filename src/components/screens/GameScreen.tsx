@@ -12,8 +12,20 @@ import './GameScreen.css';
  */
 function GameScreen() {
   const { navigateTo } = useScreen();
-  const { gameState } = useGame();
+  const { gameState, setGameState } = useGame();
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
+
+  // マウント時にゲームを開始＆スコアを初期化する
+  useEffect(() => {
+    setGameState(prev => ({
+      ...prev,
+      playerScore: 0,
+      cpuScore: 0,
+      rallyCount: 0,
+      isGameActive: true,
+      isPaused: false,
+    }));
+  }, [setGameState]);
 
   // ゲーム終了判定（11点先取）
   useEffect(() => {

@@ -1,13 +1,12 @@
-// src/utils/physics.ts
 import { Racket } from '../types/racket';
-import { CANVAS_WIDTH } from './constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants';
 
 /**
  * プレイヤーラケットの新しい状態を計算する
  */
 export const updatePlayerRacket = (
   current: Racket,
-  input: { left: boolean; right: boolean },
+  input: { left: boolean; right: boolean; up?: boolean; down?: boolean },
   deltaTime: number
 ): Racket => {
   const { moveSpeed } = current.stats;
@@ -24,14 +23,28 @@ export const updatePlayerRacket = (
     nextIsRightHanded = true; // 右に動くときは右持ち
   }
 
-  // 画面端の衝突判定（Canvasサイズ 1280px）
+  // 上下移動の計算
+  let nextY = current.y;
+  if (input.up) {
+    nextY -= moveSpeed * deltaTime;
+  }
+  if (input.down) {
+    nextY += moveSpeed * deltaTime;
+  }
+
+  // 画面端の衝突判定（Canvasサイズ 1280px x 720px）
   const minX = 0;
   const maxX = CANVAS_WIDTH - current.width;
   nextX = Math.max(minX, Math.min(maxX, nextX));
 
+  const minY = 0;
+  const maxY = CANVAS_HEIGHT - current.height;
+  nextY = Math.max(minY, Math.min(maxY, nextY));
+
   return {
     ...current,
     x: nextX,
+    y: nextY,
     isRightHanded: nextIsRightHanded,
   };
 };

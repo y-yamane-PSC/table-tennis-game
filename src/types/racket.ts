@@ -22,19 +22,19 @@ export const RACKET_TYPES: Record<RacketType, RacketStats> = {
   normal: {
     hitBoxWidth: 20,
     hitBoxHeight: 80,
-    moveSpeed: 5,
+    moveSpeed: 500,
     smashSpeed: 1.0,
   },
   speed: {
     hitBoxWidth: 16,        // 20%低下
     hitBoxHeight: 80,
-    moveSpeed: 5,
+    moveSpeed: 600,         // スピード型なので早めに
     smashSpeed: 1.2,
   },
   wide: {
     hitBoxWidth: 24,        // 20%増加
     hitBoxHeight: 80,
-    moveSpeed: 4,           // 20%低下
+    moveSpeed: 400,         // ワイドなので遅めに
     smashSpeed: 1.0,
   },
 };

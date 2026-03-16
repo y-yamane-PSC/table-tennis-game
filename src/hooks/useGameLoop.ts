@@ -8,13 +8,21 @@ import { Racket } from '../types/game';
 export function useGameLoop(callback: (deltaTime: number) => void) {
   const requestRef = useRef<number>(0);
   const previousTimeRef = useRef<number>(0);
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const animate = (time: number) => {
     if (previousTimeRef.current !== undefined) {
-      // 経過時間を計算（秒単位）
       const deltaTime = (time - previousTimeRef.current) / 1000;
-      // 極端に長いブランク（タブ移動等）対策として上限を設定
-      callback(Math.min(deltaTime, 0.1));
+      
+      // ReactDOM.flushSyncの警告を回避するため、
+      // 状態更新を非同期に逃がすか、次のMacrotaskで処理させる
+      setTimeout(() => {
+        callbackRef.current(Math.min(deltaTime, 0.1));
+      }, 0);
     }
     previousTimeRef.current = time;
     requestRef.current = requestAnimationFrame(animate);

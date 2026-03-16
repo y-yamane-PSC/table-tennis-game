@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 export function useInput() {
-  const [keys, setKeys] = useState<{ [key: string]: boolean }>({});
+  const keysRef = useRef<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      setKeys((prev) => ({ ...prev, [e.code]: true }));
+      console.log('KeyDown:', e.code); // DEBUG
+      keysRef.current[e.code] = true;
     };
     const handleKeyUp = (e: KeyboardEvent) => {
-      setKeys((prev) => ({ ...prev, [e.code]: false }));
+      keysRef.current[e.code] = false;
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -20,12 +21,6 @@ export function useInput() {
     };
   }, []);
 
-  return {
-    // 左右の移動キー判定
-    left: keys['ArrowLeft'],
-    right: keys['ArrowRight'],
-    // スペースキーでのスマッシュ判定
-    smash: keys['Space']
-  };
+  return keysRef;
 }
 export default useInput;
