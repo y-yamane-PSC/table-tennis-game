@@ -70,3 +70,34 @@ export const updateCpuRacket = (
     y: nextY,
   };
 };
+
+/**
+ * CPUラケットの新しい状態を計算する（X方向追従ロジック）
+ * 卓球のプレイヤー視点（下=プレイヤー、上=CPU）のときに使用する
+ */
+export const updateCpuRacketX = (
+  current: Racket,
+  ballX: number,
+  followSpeed: number,
+  deltaTime: number
+): Racket => {
+  // ボールのX座標にラケットの中心を合わせるように移動（最大速度で追従）
+  const targetLeftX = ballX - current.width / 2;
+  const diffX = targetLeftX - current.x;
+
+  // プレイヤーと同じ「px/sec」ベースで移動させる
+  const maxSpeed = current.stats.moveSpeed * followSpeed; // followSpeed: 難易度倍率
+  const maxStep = maxSpeed * deltaTime;
+  const step = Math.max(-maxStep, Math.min(maxStep, diffX));
+  let nextX = current.x + step;
+
+  // 画面端の衝突判定
+  const minX = 0;
+  const maxX = CANVAS_WIDTH - current.width;
+  nextX = Math.max(minX, Math.min(maxX, nextX));
+
+  return {
+    ...current,
+    x: nextX,
+  };
+};

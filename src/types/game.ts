@@ -29,6 +29,22 @@ export interface Ball {
   y: number;
   vx: number;               // X方向の速度
   vy: number;               // Y方向の速度
+  /**
+   * 卓球の「高さ」表現用（2D Canvas上の疑似3D）
+   * z: 卓球台（平面）からの高さ
+   * vz: z方向の速度
+   */
+  z?: number;
+  vz?: number;
+  /**
+   * 卓球ルール判定用
+   * lastHitBy: 最後に打った側
+   * bounceCount: 最後に打ってからのバウンド回数（台に接地した回数）
+   * lastBounceSide: 直近のバウンドが起きたコート側
+   */
+  lastHitBy?: 'player' | 'cpu';
+  bounceCount?: number;
+  lastBounceSide?: 'player' | 'cpu' | null;
   radius: number;
   type: BallType;
   isReal: boolean;          // ハートボールの本物判定用
