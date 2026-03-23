@@ -38,17 +38,31 @@ function GameScreen() {
     }
   }, [gameState.playerScore, gameState.cpuScore, navigateTo]);
 
-  // 得点時のポジティブなフィードバック演出用
+  // 2点以上連続得点した時のみポジティブなフィードバックを表示
+  const [prevCpuScore, setPrevCpuScore] = useState(gameState.cpuScore);
+
   useEffect(() => {
-    if (gameState.playerScore > 0 && gameState.isGameActive) {
+    // プレイヤーのスコアが増加し、かつ CPU が直近で点を取っていなければ連続得点とみなす
+    // ただし 2点目以降のみ表示(1点目=初得点では表示しない)
+    if (
+      gameState.playerScore >= 2 && // 2点以上
+      gameState.cpuScore === prevCpuScore && // CPUの得点が変わっていない = 連続
+      gameState.isGameActive
+    ) {
       const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
       const randomMsg = positiveMessages[Math.floor(Math.random() * positiveMessages.length)];
       setActiveMessage(randomMsg);
-      
       const timer = setTimeout(() => setActiveMessage(null), 2000);
       return () => clearTimeout(timer);
     }
-  }, [gameState.playerScore]);
+
+    // CPU が得点した場合、prevCpuScoreを更新
+    if (gameState.cpuScore !== prevCpuScore) {
+      setPrevCpuScore(gameState.cpuScore);
+    }
+    // プレイヤーが点を取っても、上記ifでなければprevCpuScoreの更新のみ
+    // (もう連続得点でなくなったのでフィードバック非表示)
+  }, [gameState.playerScore, gameState.cpuScore, gameState.isGameActive, prevCpuScore]);
 
   return (
     <div className="game-screen-container">

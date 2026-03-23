@@ -26,7 +26,9 @@
 
 .game-header {
   z-index: 10;
-  margin-bottom: 10px;
+  margin-bottom: -200px;
+  transform: scale(0.8);
+  transform-origin: center center;
 }
 
 .game-main {
@@ -34,8 +36,11 @@
   z-index: 5;
   border: 8px solid #ffffff;
   border-radius: 20px;
-  box-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+  box-shadow: 0 0 20px rgba(255, 182, 193, 0.5) ;
   background-color: #000; /* Canvasの背景 */
+  margin-top: 100px;
+  transform: scale(0.7);
+  transform-origin: center center;
 }
 
 .canvas-wrapper {
@@ -48,8 +53,10 @@
 }
 
 .game-footer {
-  margin-top: 15px;
+  margin-top: -90px;
   z-index: 10;
+  transform: scale(0.8);
+  transform-origin: center center;
 }
 
 .controls-hint {
@@ -59,6 +66,7 @@
   color: #ff69b4;
   font-weight: bold;
   font-size: 1.1rem;
+
 }
 
 /* ポップアップ演出：ふわっと浮き上がるアニメーション */
