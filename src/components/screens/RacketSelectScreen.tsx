@@ -77,7 +77,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('normal')}
           >
             <img
-              src="/images/normal.png"
+              src="./images/normal.png"
               alt="ノーマルラケット"
               className='racket-img'
             />
@@ -90,7 +90,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('speed')}
           >
             <img
-              src="/images/speed.png"
+              src="./images/speed.png"
               alt="スピードラケット"
                className='racket-img'
             />
@@ -103,7 +103,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('wide')}
           >
             <img
-              src="/images/wide.png"
+              src="./images/wide.png"
               alt="ワイドラケット"
               className='racket-img'
             />
