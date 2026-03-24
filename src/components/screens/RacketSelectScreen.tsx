@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
+import { useScreenParams } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import { RacketType } from '../../types/game';
 import Button from '../ui/Button';
@@ -7,6 +8,7 @@ import './RacketSelectScreen.css';
 
 function RacketSelectScreen() {
   const { navigateTo } = useScreen();
+  const { navigateToWithParams } = useScreenParams();
   const { gameState, setGameState } = useGame();
   const [selectedRacket, setSelectedRacket] = useState<RacketType>('normal');
 
@@ -15,6 +17,7 @@ function RacketSelectScreen() {
   };
 
   const handleConfirm = () => {
+    // ラケット設定をstateに反映
     setGameState(prev => ({
       ...prev,
       config: {
@@ -22,7 +25,8 @@ function RacketSelectScreen() {
         racketType: selectedRacket,
       },
     }));
-    navigateTo('game');
+    // 選択したラケット情報だけを渡して次画面へ
+    navigateToWithParams('game', { state: { racketType: selectedRacket } });
   };
 
   const handleBack = () => {
