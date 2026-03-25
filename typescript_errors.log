@@ -1,0 +1,7 @@
+src/components/screens/DifficultyScreen.tsx(10,11): error TS6133: 'gameState' is declared but its value is never read.
+src/components/screens/HomeScreen.tsx(9,13): error TS6133: 'gameState' is declared but its value is never read.
+src/components/screens/RacketSelectScreen.tsx(12,11): error TS6133: 'gameState' is declared but its value is never read.
+src/hooks/useBallEffects.ts(2,16): error TS6133: 'Racket' is declared but its value is never read.
+src/hooks/useCollision.ts(2,24): error TS6133: 'RacketType' is declared but its value is never read.
+src/hooks/useCollision.ts(38,79): error TS6133: 'deltaTime' is declared but its value is never read.
+src/hooks/useParticles.ts(18,65): error TS6133: 'ballType' is declared but its value is never read.

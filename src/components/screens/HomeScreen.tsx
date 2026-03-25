@@ -10,13 +10,13 @@ function HomeScreen() {
 
     const handleStart = () => {
         setGameState(prev => ({
-          ...prev,
-          config: {
-            ...prev.config,
-          },
+            ...prev,
+            config: {
+                ...prev.config,
+            },
         }));
         navigateTo('difficulty');
-      };
+    };
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -28,17 +28,17 @@ function HomeScreen() {
         // クリーンアップ関数（画面から消える時にリスナーを削除）
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []); // 空の配列を渡して初回のみ実行
-    
+
     return (
         <div className="home-main">
             <h1 className="main-title">ミラクル・ラリー！キャンディ・マジック✨</h1>
 
             <Button
-            variant="primary"
-            onClick={handleStart}
-            className="main-start-button"
+                variant="primary"
+                onClick={handleStart}
+                className="main-start-button"
             >
-            スタート
+                スタート
             </Button>
         </div>
     );

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
-import { useScreenParams } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import { RacketType } from '../../types/game';
 import Button from '../ui/Button';
@@ -8,7 +7,6 @@ import './RacketSelectScreen.css';
 
 function RacketSelectScreen() {
   const { navigateTo } = useScreen();
-  const { navigateToWithParams } = useScreenParams();
   const { gameState, setGameState } = useGame();
   const [selectedRacket, setSelectedRacket] = useState<RacketType>('normal');
 
@@ -26,7 +24,7 @@ function RacketSelectScreen() {
       },
     }));
     // 選択したラケット情報だけを渡して次画面へ
-    navigateToWithParams('game', { state: { racketType: selectedRacket } });
+    navigateTo('game');
   };
 
   const handleBack = () => {
@@ -63,9 +61,9 @@ function RacketSelectScreen() {
   }, [selectedRacket]);
 
   const racketDescriptions: Record<RacketType, string> = {
-    normal: 'バランスの良い性能←初めての方にオススメ',
-    power: 'スマッシュの速度が1.2倍になるが当たり判定が20%低下',
-    wide: '当たり判定が1.2倍になるが移動速度が20%低下',
+    normal: 'とってもつかいやすいらけっとだよ←はじめてのおともだちにおすすめ！',
+    power: 'たいみんぐよくうったボールが、いつもよりはやくなるよ！',
+    wide: 'あてるのがすごくかんたんだよ！',
   };
 
   return (
@@ -94,11 +92,11 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('power')}
           >
             <img
-              src="./images/speed.png"
-              alt="スピードラケット"
+              src="./images/power.png"
+              alt="パワーラケット"
                className='racket-img'
             />
-            <h3>スピードラケット</h3>
+            <h3>パワーラケット</h3>
             <p>{racketDescriptions.power}</p>
           </div>
           

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { useInput } from '../../hooks/useInput';
@@ -6,7 +6,7 @@ import { useParticles } from '../../hooks/useParticles';
 import { useBallEffects } from '../../hooks/useBallEffects';
 // physics.ts から更新関数をインポート
 import { updatePlayerRacket, updateCpuRacketX } from '../../utils/physics';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, RACKET_BASE_WIDTH, RACKET_BASE_HEIGHT, BALL_RADIUS } from '../../utils/constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, BALL_RADIUS, SMASH_SPEED_MULTIPLIER } from '../../utils/constants';
 import { Racket, RACKET_TYPES } from '../../types/racket';
 import { Ball } from '../../types/ball';
 
@@ -34,11 +34,9 @@ const GameCanvas: React.FC = () => {
   const { particles, createHitParticles, updateParticles } = useParticles();
   const { processBallEffects } = useBallEffects();
   const lastSpaceDownRef = useRef(false);
+  const smashBufferRef = useRef(0); // スマッシュ判定のタイミング猶予
+  const smashEffectRef = useRef({ active: false, x: 0, y: 0, timer: 0 }); // スマッシュ演出用
   const scoreLockRef = useRef(false); // 1得点=1点を保証（開発時の二重実行対策）
-
-  // 卓球のプレイヤー視点（下=プレイヤー、上=CPU）用に横長ラケットにする
-  const PADDLE_WIDTH = RACKET_BASE_HEIGHT; // 80
-  const PADDLE_HEIGHT = RACKET_BASE_WIDTH; // 20
 
   // 疑似3D（高さ）用のパラメータ
   const GRAVITY_Z = -0.38; // 1フレームあたりの重力（z方向）
@@ -47,6 +45,16 @@ const GameCanvas: React.FC = () => {
   const HITTABLE_Z = 80;   // 触れたら打ち返す（空中でも返せるように緩める）
   const MAX_Z = 140;       // 描画上の上限（暴れ防止）
   const Z_TO_SCREEN = 0.9; // z -> 画面上の持ち上げ係数
+
+  // ラケット画像のプリロード
+  const racketImages = useRef<Record<string, HTMLImageElement>>({}).current;
+  useEffect(() => {
+    if (!racketImages['normal']) {
+      const normalImg = new Image(); normalImg.src = './images/normal.png'; racketImages['normal'] = normalImg;
+      const speedImg = new Image(); speedImg.src = './images/power.png'; racketImages['power'] = speedImg;
+      const wideImg = new Image(); wideImg.src = './images/wide.png'; racketImages['wide'] = wideImg;
+    }
+  }, [racketImages]);
 
   const awardPoint = (winner: 'player' | 'cpu') => {
     if (scoreLockRef.current) return;
@@ -153,6 +161,14 @@ const GameCanvas: React.FC = () => {
     return landVzForTime(t);
   };
 
+  // 選択されたラケットのタイプとステータスを取得
+  const currentRacketType = gameState.config?.racketType || 'normal';
+  const currentRacketStats = RACKET_TYPES[currentRacketType];
+
+  // 卓球のプレイヤー視点（下=プレイヤー、上=CPU）に合わせて直感的なサイズに変更しました
+  const PADDLE_WIDTH = currentRacketStats.hitBoxWidth; // 横幅(長さ)
+  const PADDLE_HEIGHT = currentRacketStats.hitBoxHeight; // 厚み
+
   // --- 1. 状態(State)の定義 ---
   const [playerRacket, setPlayerRacket] = useState<Racket>({
     x: CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
@@ -160,17 +176,20 @@ const GameCanvas: React.FC = () => {
     y: TABLE_BOTTOM_Y - 30 - PADDLE_HEIGHT,
     width: PADDLE_WIDTH,
     height: PADDLE_HEIGHT,
-    stats: RACKET_TYPES.normal,
+    stats: currentRacketStats,
     isRightHanded: true,
     effectMultiplier: 1.0,
   });
 
+  const CPU_PADDLE_WIDTH = RACKET_TYPES.normal.hitBoxWidth;
+  const CPU_PADDLE_HEIGHT = RACKET_TYPES.normal.hitBoxHeight;
+
   const [cpuRacket, setCpuRacket] = useState<Racket>({
-    x: CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
+    x: CANVAS_WIDTH / 2 - CPU_PADDLE_WIDTH / 2,
     // 卓球台の内側（奥側）に配置してラリーが成立するようにする
     y: TABLE_TOP_Y + 30,
-    width: PADDLE_WIDTH,
-    height: PADDLE_HEIGHT,
+    width: CPU_PADDLE_WIDTH,
+    height: CPU_PADDLE_HEIGHT,
     stats: RACKET_TYPES.normal,
     isRightHanded: false,
     effectMultiplier: 1.0,
@@ -197,7 +216,7 @@ const GameCanvas: React.FC = () => {
 
   const resetBallToPlayerServe = (): Ball => ({
     x: playerRacket.x + playerRacket.width / 2,
-    y: playerRacket.y - BALL_RADIUS - 6,
+    y: playerRacket.y + playerRacket.height * 0.4,
     vx: 0,
     vy: 0,
     z: 0,
@@ -205,6 +224,7 @@ const GameCanvas: React.FC = () => {
     lastHitBy: 'player',
     bounceCount: 0,
     lastBounceSide: null,
+    isNetFault: false,
     radius: BALL_RADIUS,
     type: 'normal',
     isReal: true,
@@ -232,12 +252,20 @@ const GameCanvas: React.FC = () => {
     const spaceJustPressed = spaceDown && !lastSpaceDownRef.current;
     lastSpaceDownRef.current = !!spaceDown;
 
+    // スペースキーが押された瞬間から15フレーム（約250ms）だけスマッシュ可能にする（タイミング判定）
+    if (spaceJustPressed && !isServe) {
+      smashBufferRef.current = 15;
+    }
+    if (smashBufferRef.current > 0) {
+      smashBufferRef.current--;
+    }
+
     // サーブ中: ボールをラケットに付けたまま表示し、スペースで発射
     if (isServe) {
       setBall((prev) => ({
         ...prev,
         x: playerRacket.x + playerRacket.width / 2,
-        y: playerRacket.y - prev.radius - 6,
+        y: playerRacket.y + playerRacket.height * 0.4,
         vx: 0,
         vy: 0,
         z: 0,
@@ -245,6 +273,7 @@ const GameCanvas: React.FC = () => {
         lastHitBy: 'player',
         bounceCount: 0,
         lastBounceSide: null,
+        isNetFault: false,
       }));
 
       if (spaceJustPressed) {
@@ -255,7 +284,7 @@ const GameCanvas: React.FC = () => {
         setBall((prev) => {
           const serveVy = -6.2;
           const serveVx = (Math.random() - 0.5) * 3.2;
-          const startY = playerRacket.y - prev.radius - 6;
+          const startY = playerRacket.y + playerRacket.height * 0.4;
           return {
             ...prev,
             x: playerRacket.x + playerRacket.width / 2,
@@ -268,6 +297,7 @@ const GameCanvas: React.FC = () => {
             // 卓球: 打ち返した瞬間はバウンド回数をリセット（=0）
             bounceCount: 0,
             lastBounceSide: null,
+            isNetFault: false,
           };
         });
       }
@@ -290,6 +320,7 @@ const GameCanvas: React.FC = () => {
       nextBall.lastHitBy = nextBall.lastHitBy ?? 'player';
       nextBall.bounceCount = nextBall.bounceCount ?? 0;
       nextBall.lastBounceSide = nextBall.lastBounceSide ?? null;
+      nextBall.isNetFault = nextBall.isNetFault ?? false;
       
       // ボールの移動
       nextBall.x += nextBall.vx;
@@ -297,6 +328,27 @@ const GameCanvas: React.FC = () => {
       // z方向（高さ）の移動（重力 + バウンド）
       nextBall.vz += GRAVITY_Z;
       nextBall.z += nextBall.vz;
+
+      // --- ネット衝突判定 ---
+      // 今回のフレームで、ボールがネット(NET_Y)をまたいだかどうか
+      const crossedNet = (prevBall.y <= NET_Y && nextBall.y > NET_Y) || 
+                         (prevBall.y >= NET_Y && nextBall.y < NET_Y);
+      
+      // ネットの横幅の判定
+      const tableWidthAtNet = (TABLE_TOP_WIDTH + TABLE_BOTTOM_WIDTH) / 2;
+      const netLeftBound = TABLE_CENTER_X - (tableWidthAtNet / 2) + 6;
+      const netRightBound = TABLE_CENTER_X + (tableWidthAtNet / 2) - 6;
+
+      // 見た目のネットは高いまま、ボールの当たり判定（z座標）だけを下げてシビアさを緩和する（38 -> 24）
+      if (crossedNet && nextBall.x >= netLeftBound && nextBall.x <= netRightBound && nextBall.z < 24 && !nextBall.isNetFault) {
+        // ネット衝突！
+        nextBall.isNetFault = true;
+        // 大きく減速して手前のコート内にポトリと落ちて転がる動作
+        nextBall.vy = -nextBall.vy * 0.15; // 少しだけ跳ね返る
+        nextBall.vx *= 0.15;               // 横方向の勢いも殺す
+        nextBall.vz *= 0.3;                // 上下方向の勢いも殺す
+      }
+      // ----------------------
       if (nextBall.z < 0) {
         // --- 卓球台にバウンド ---
         nextBall.z = 0;
@@ -311,7 +363,12 @@ const GameCanvas: React.FC = () => {
         // 相手が打った球を打ち返す前にコート内で2回バウンドした場合、その時点で「打った側」の得点
         if (nextBounceCount >= 2) {
           const hitter = nextBall.lastHitBy ?? 'player';
-          awardPoint(hitter);
+          if (nextBall.isNetFault) {
+            // ネットフォルト（＝自分のコートに引っかかった等）の場合は相手の得点
+            awardPoint(opponentOf(hitter));
+          } else {
+            awardPoint(hitter);
+          }
           startServe();
           return resetBallToPlayerServe();
         }
@@ -327,9 +384,15 @@ const GameCanvas: React.FC = () => {
         const bounces = nextBall.bounceCount ?? 0;
 
         // 卓球ルール:
-        // - 1度バウンドしたのちコート外に出て、相手が打ち返せなかった => 相手の失点（=打った側の得点）
-        // - 1度もバウンドする前にコート外に出た => 最後に触れた側の失点（=反対側の得点）
-        const winner = bounces >= 1 ? hitter : opponentOf(hitter);
+        // - 1度バウンドしたのちコート外に出た => 最後に触れた側(hitter)の得点
+        // - 1度もバウンドする前にコート外に直接出た => hitterの失点（＝相手の得点）
+        let winner = bounces >= 1 ? hitter : opponentOf(hitter);
+        
+        // もしネットフォルトの状態で外に転がり出た場合は、相手の得点で上書きする
+        if (nextBall.isNetFault) {
+          winner = opponentOf(hitter);
+        }
+
         awardPoint(winner);
         startServe();
         return resetBallToPlayerServe(); // setBallのreturn値としても返す（即時反映）
@@ -338,20 +401,41 @@ const GameCanvas: React.FC = () => {
       // 2. プレイヤーラケット（手前・下）との衝突判定
       // 下方向に落ちてきた球だけを打てる（連続ヒット/めり込みによる逆反射を防ぐ）
       if ((nextBall.z ?? 0) <= HITTABLE_Z && nextBall.vy > 0 && checkRacketCollision(nextBall, playerRacket)) {
-        nextBall.vy = -Math.abs(nextBall.vy) * 1.05; // 奥へ返して加速
+        // タイミングよくスペースを直近で押していればスマッシュ発動！
+        let isSmashing = false;
+        if (smashBufferRef.current > 0) {
+          isSmashing = true;
+          smashBufferRef.current = 0; // すぐに消費する
+          // 大文字の「SMASH!!」演出を起動
+          smashEffectRef.current = { active: true, x: nextBall.x, y: nextBall.y, timer: 45 };
+        }
+
+        // スマッシュの速度計算。相手の球が遅くても「最低保証の速さ」で強烈に打ち返す。
+        let nextVy = 0;
+        if (isSmashing) {
+          const baseSmashVelocity = -15 * SMASH_SPEED_MULTIPLIER; // スマッシュの基礎速度（超高速）
+          // ラケットのステータスに完全に依存したスピードを与える
+          nextVy = baseSmashVelocity * playerRacket.stats.smashSpeed;
+        } else {
+          nextVy = -Math.abs(nextBall.vy) * 1.05; // 通常時は今の速度を少しだけ加速して返す
+        }
+
+        // スマッシュを「本物」の速さにするために最大速度上限を大幅に引き上げ (-55)
+        nextBall.vy = Math.max(nextVy, -55);
         nextBall.y = playerRacket.y - nextBall.radius; // めり込み防止
         applyRacketAngle(nextBall, playerRacket);
         // 相手（CPU）コート側でバウンドするように高さ初速を調整
         nextBall.z = 0;
         nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'cpu');
         nextBall.lastHitBy = 'player';
-        // 卓球: 打ち返した瞬間はバウンド回数をリセット（=0）
+        // 卓球: 打ち返した瞬間は状態をリセット
         nextBall.bounceCount = 0;
         nextBall.lastBounceSide = null;
+        nextBall.isNetFault = false;
         
         // ラリー加算とボール変化判定
         setGameState(prev => ({ ...prev, rallyCount: prev.rallyCount + 1 }));
-        createHitParticles(nextBall.x, nextBall.y, 'star');
+        createHitParticles(nextBall.x, nextBall.y, isSmashing ? 'star' : 'normal');
         
         if ((gameState.rallyCount + 1) % 5 === 0) {
           nextBall = processBallEffects(nextBall);
@@ -369,9 +453,10 @@ const GameCanvas: React.FC = () => {
         nextBall.z = 0;
         nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'player');
         nextBall.lastHitBy = 'cpu';
-        // 卓球: 打ち返した瞬間はバウンド回数をリセット（=0）
+        // 卓球: 打ち返した瞬間は状態をリセット
         nextBall.bounceCount = 0;
         nextBall.lastBounceSide = null;
+        nextBall.isNetFault = false;
         createHitParticles(nextBall.x, nextBall.y, 'normal');
       }
 
@@ -399,13 +484,57 @@ const GameCanvas: React.FC = () => {
     drawTable(ctx);
   
     // 3. ラケットとボールを描画
-    drawRacket(ctx, playerRacket, '#FFB6C1', true); 
-    drawRacket(ctx, cpuRacket, '#87CEEB', false);   
+    drawRacket(ctx, cpuRacket, '#87CEEB', false); // 奥のCPUを手前に  
+    
     drawBallTrajectory(ctx, ball);
     drawBall(ctx, ball);
+
+    // プレイヤーラケットは一番手前に（ボールに被さる）
+    if (isServe) {
+      ctx.globalAlpha = 0.6; // サーブ時はボールが透けて見えるように
+    }
+    drawRacket(ctx, playerRacket, '#FFB6C1', true, currentRacketType); 
+    ctx.globalAlpha = 1.0;
     
     // 4. パーティクル（キラキラ）の描画
     particles.forEach(p => drawParticle(ctx, p));
+
+    // 5. スマッシュテキスト演出の描画
+    if (smashEffectRef.current.active && smashEffectRef.current.timer > 0) {
+      const effect = smashEffectRef.current;
+      effect.timer--;
+      ctx.save();
+      
+      // 経過時間に応じて上に浮かびながらフェードアウト・拡大
+      const progress = 1 - (effect.timer / 45); // 0 から 1 に向かう
+      const scale = 1 + progress * 0.7;         // 最大1.7倍に拡大
+      const alpha = effect.timer > 15 ? 1 : effect.timer / 15; // 終盤で消える
+      
+      ctx.globalAlpha = alpha;
+      ctx.translate(effect.x, effect.y - progress * 80); // 上に昇る
+      ctx.scale(scale, scale);
+      
+      // テキスト描画スタイル（太めでインパクトを出す）
+      ctx.font = '900 42px "Arial Black", impact, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // 後ろの赤い光彩（グロー効果）
+      ctx.shadowColor = '#FF0000';
+      ctx.shadowBlur = 20;
+      
+      // 白い太めの縁取り
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 6;
+      ctx.strokeText('SMASH!!', 0, 0);
+      
+      // 中身（燃えるようなオレンジ〜赤）
+      ctx.shadowBlur = 0; // テキスト中身には影不要
+      ctx.fillStyle = '#FF2400';
+      ctx.fillText('SMASH!!', 0, 0);
+      
+      ctx.restore();
+    }
   };
 
   const drawTable = (ctx: CanvasRenderingContext2D) => {
@@ -444,50 +573,102 @@ const GameCanvas: React.FC = () => {
     ctx.lineTo(centerX, bottomY);
     ctx.stroke();
 
-    // ネット（横方向・中央）
+    // --- 3Dネットの描画 ---
     const netY = NET_Y;
-    const netHalfWidth = ((topWidth + bottomWidth) / 2) * 0.52;
-    ctx.strokeStyle = '#1B1B1B';
-    ctx.lineWidth = 6;
+    // ネット位置（中央）における卓球台の全幅
+    const tableWidthAtNet = (topWidth + bottomWidth) / 2;
+    // はみ出さないよう、台の幅の半分より少し内側(-6px)に両端のポストを設置
+    const netHalfWidth = (tableWidthAtNet / 2) - 6;
+    const netHeight = 40; // 存在感が出るよう高さをアップ
+    const netLeft = centerX - netHalfWidth;
+    const netRight = centerX + netHalfWidth;
+
+    // 1. ネットのベース（半透明の網部分）
+    ctx.fillStyle = 'rgba(200, 200, 220, 0.25)';
+    ctx.fillRect(netLeft, netY - netHeight, netRight - netLeft, netHeight);
+
+    // 2. ネットの網目（縦と横のラインでクロスハッチ表現）
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(centerX - netHalfWidth, netY);
-    ctx.lineTo(centerX + netHalfWidth, netY);
+    // 横糸（高さに応じて本数を自動調整）
+    const numHorizontals = Math.floor(netHeight / 6);
+    for (let i = 1; i < numHorizontals; i++) {
+        const yLine = netY - netHeight + i * (netHeight / numHorizontals);
+        ctx.moveTo(netLeft, yLine);
+        ctx.lineTo(netRight, yLine);
+    }
+    // 縦糸
+    const numVerticals = Math.floor((netRight - netLeft) / 8); 
+    const stepX = (netRight - netLeft) / numVerticals;
+    for (let i = 1; i < numVerticals; i++) {
+        const xLine = netLeft + i * stepX;
+        ctx.moveTo(xLine, netY - netHeight);
+        ctx.lineTo(xLine, netY);
+    }
     ctx.stroke();
 
-    // ネットの網（点線）
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 8]);
+    // 3. ネットの上の白いテープ（白帯）
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(centerX - netHalfWidth, netY + 2);
-    ctx.lineTo(centerX + netHalfWidth, netY + 2);
+    ctx.moveTo(netLeft, netY - netHeight + 2);
+    ctx.lineTo(netRight, netY - netHeight + 2);
     ctx.stroke();
-    ctx.setLineDash([]);
+
+    // 4. ネットと卓球台の境界線
+    ctx.strokeStyle = '#1B1B1B';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(netLeft, netY);
+    ctx.lineTo(netRight, netY);
+    ctx.stroke();
+
+    // 5. 左右の支柱（ポスト）
+    ctx.fillStyle = '#444444'; // 濃いグレー
+    ctx.fillRect(netLeft - 4, netY - netHeight - 3, 8, netHeight + 6);
+    ctx.fillRect(netRight - 4, netY - netHeight - 3, 8, netHeight + 6);
+    
+    // 6. 支柱を台に固定する金具部分
+    ctx.fillStyle = '#222222';
+    ctx.fillRect(netLeft - 5, netY, 10, 8);
+    ctx.fillRect(netRight - 5, netY, 10, 8);
   };
 
-  const drawRacket = (ctx: CanvasRenderingContext2D, racket: Racket, color: string, isPlayer: boolean) => {
+  const drawRacket = (ctx: CanvasRenderingContext2D, racket: Racket, color: string, isPlayer: boolean, racketType?: string) => {
     ctx.save();
-    // ラケット本体（角丸の長方形）
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.roundRect(racket.x, racket.y, racket.width, racket.height, 10);
-    ctx.fill();
     
-    // プレイヤー専用の装飾（リボン）
-    if (isPlayer) {
-      ctx.fillStyle = '#FF69B4'; // リボン用の濃いピンク
-      // 右持ちか左持ちかでリボンの位置を調整
-      const ribbonX = racket.isRightHanded ? racket.x + racket.width : racket.x;
-      
-      // 簡易的なリボンの形状 (racket.yに追従するよう修正)
+    // 立体感を出すためのドロップシャドウを全てのラケットに追加
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 15;
+
+    // 画像があればそれを描画（プレイヤーのみ）
+    if (isPlayer && racketType && racketImages[racketType] && racketImages[racketType].complete) {
+      ctx.drawImage(racketImages[racketType], racket.x, racket.y, racket.width, racket.height);
+    } else {
+      // ラケット本体（角丸の長方形）
+      ctx.fillStyle = color;
       ctx.beginPath();
-      // 横長ラケットなので、リボンは端に小さく付ける
-      ctx.arc(ribbonX, racket.y + racket.height / 2, 7, 0, Math.PI * 2);
+      ctx.roundRect(racket.x, racket.y, racket.width, racket.height, 10);
       ctx.fill();
       
-      // 中央の結び目
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ribbonX - 3, racket.y + racket.height / 2 - 3, 6, 6);
+      // プレイヤー専用の装飾（リボン）- 画像がない場合のフォールバック
+      if (isPlayer) {
+        ctx.fillStyle = '#FF69B4'; // リボン用の濃いピンク
+        // 右持ちか左持ちかでリボンの位置を調整
+        const ribbonX = racket.isRightHanded ? racket.x + racket.width : racket.x;
+        
+        // 簡易的なリボンの形状 (racket.yに追従するよう修正)
+        ctx.beginPath();
+        // 横長ラケットなので、リボンは端に小さく付ける
+        ctx.arc(ribbonX, racket.y + racket.height / 2, 7, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 中央の結び目
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(ribbonX - 3, racket.y + racket.height / 2 - 3, 6, 6);
+      }
     }
   
     ctx.restore();

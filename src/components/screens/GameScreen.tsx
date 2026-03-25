@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
-import { useScreenParams } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import ScoreBoard from '../ui/ScoreBoard';
 import GameCanvas from '../game/GameCanvas';
@@ -15,24 +14,8 @@ function GameScreen() {
   const { navigateTo } = useScreen();
   const { gameState, setGameState } = useGame();
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
-  const { screenParams } = useScreenParams();
-
-  // 選択したラケットをゲーム内で使用するロジック
-  useEffect(() => {
-    if (!screenParams?.racketType) return;
-
-    let newStatus = { speed: 1.0, wide: 1.0 };
-  
-    switch (screenParams.racketType) {
-      case 'wide':
-        newStatus = { speed: 0.8, wide: 1.5 };
-        break;
-      case 'power':
-        newStatus = { speed: 1.5, wide: 0.7 };
-        break;
-    }
-
   // マウント時にゲームを開始＆スコアを初期化する
+  useEffect(() => {
     setGameState(prev => ({
       ...prev,
       playerScore: 0,
@@ -40,9 +23,8 @@ function GameScreen() {
       rallyCount: 0,
       isGameActive: true,
       isPaused: false,
-      racketStatus: newStatus
     }));
-  }, [screenParams, setGameState]);
+  }, [setGameState]);
 
   // ゲーム終了判定（11点先取）
   useEffect(() => {

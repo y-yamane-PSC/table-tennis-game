@@ -28,22 +28,24 @@
 
 .racket-cards {
   display: flex;
-  gap: var(--spacing-medium);
+  gap: 32px; /* カード間の余白 */
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .racket-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   border-radius: 20px;
-  padding: var(--spacing-large);
-  min-width: 380px;
-  min-height: 400px;
+  padding: 24px;
+  width: 320px; /* 全体的に少し縮小 */
+  min-height: 340px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 3px solid transparent;
-  padding-bottom: 16px;
-  margin-right: 32px;
+  border: 4px solid transparent;
 }
 
 .racket-card:hover {
@@ -70,12 +72,11 @@
 }
 
 .racket-img{
-  width: 300px;
+  display: block;
+  width: 200px; /* カードサイズに合わせて画像を縮小 */
   height: auto;
-  text-align: center;
   border-radius: 20px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-bottom: 16px;
 }
 
 .decision-button{

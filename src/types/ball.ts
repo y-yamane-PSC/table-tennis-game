@@ -21,6 +21,7 @@ export interface Ball {
   lastHitBy?: 'player' | 'cpu';
   bounceCount?: number;
   lastBounceSide?: 'player' | 'cpu' | null;
+  isNetFault?: boolean; // ネットに衝突した状態かどうか
   radius: number;
   type: BallType;
   isReal: boolean;         // ハートボールの本物判定用

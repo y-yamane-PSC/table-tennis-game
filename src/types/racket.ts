@@ -15,26 +15,26 @@ export interface Racket {
   stats: RacketStats;       // ステータス
   isRightHanded: boolean;   // 右持ちか左持ちか
   effectMultiplier: number; // 効果による倍率（イチゴ/キャンディ用）
-  
+
 }
 
 export const RACKET_TYPES: Record<RacketType, RacketStats> = {
   normal: {
-    hitBoxWidth: 20,
-    hitBoxHeight: 80,
+    hitBoxWidth: 120,      // 横幅
+    hitBoxHeight: 20,     // 厚み
     moveSpeed: 500,
-    smashSpeed: 1.0,
+    smashSpeed: 2.0,
   },
   power: {
-    hitBoxWidth: 16,        // 20%低下
-    hitBoxHeight: 80,
-    moveSpeed: 600,         // スピード型なので早めに
-    smashSpeed: 1.2,
+    hitBoxWidth: 64,      // 横幅を20%短く64
+    hitBoxHeight: 16,     // 厚みも少し薄く(ユーザーの意図を汲む)
+    moveSpeed: 650,
+    smashSpeed: 3.0,
   },
   wide: {
-    hitBoxWidth: 24,        // 20%増加
-    hitBoxHeight: 80,
-    moveSpeed: 400,         // ワイドなので遅めに
-    smashSpeed: 1.0,
+    hitBoxWidth: 180,     // 横幅を大幅に長く(確実に変化がわかるように)
+    hitBoxHeight: 24,     // 厚みも少し厚く
+    moveSpeed: 400,
+    smashSpeed: 1.5,
   },
 };

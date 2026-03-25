@@ -53,21 +53,21 @@ export interface Ball {
 
 export const RACKET_STATS: Record<RacketType, RacketStats> = {
   normal: {
-    hitBoxWidth: 20,
-    hitBoxHeight: 80,
+    hitBoxWidth: 80,
+    hitBoxHeight: 20,
     moveSpeed: 5,
     smashSpeed: 1.0,
   },
   power: {
-    hitBoxWidth: 16,        // 20%低下
-    hitBoxHeight: 80,
+    hitBoxWidth: 64,
+    hitBoxHeight: 16,
     moveSpeed: 5,
-    smashSpeed: 1.2,        // 1.2倍
+    smashSpeed: 1.2,
   },
   wide: {
-    hitBoxWidth: 24,        // 20%増加
-    hitBoxHeight: 80,
-    moveSpeed: 4,           // 20%低下
+    hitBoxWidth: 120,
+    hitBoxHeight: 24,
+    moveSpeed: 4,
     smashSpeed: 1.0,
   },
 };
