@@ -25,7 +25,7 @@ export const RACKET_TYPES: Record<RacketType, RacketStats> = {
     moveSpeed: 500,
     smashSpeed: 1.0,
   },
-  speed: {
+  power: {
     hitBoxWidth: 16,        // 20%低下
     hitBoxHeight: 80,
     moveSpeed: 600,         // スピード型なので早めに

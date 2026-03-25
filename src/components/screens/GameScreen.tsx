@@ -27,7 +27,7 @@ function GameScreen() {
       case 'wide':
         newStatus = { speed: 0.8, wide: 1.5 };
         break;
-      case 'speed':
+      case 'power':
         newStatus = { speed: 1.5, wide: 0.7 };
         break;
     }
@@ -111,7 +111,7 @@ function GameScreen() {
 
       <footer className="game-footer">
         <p className="controls-hint">
-          「← →」で いどう ／ 「スペース」で スマッシュ！
+          「← →」で いどう ／ 「スペース」で サーブ・スマッシュ！
         </p>
       </footer>
     </div>

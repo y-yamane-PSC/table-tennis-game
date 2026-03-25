@@ -42,7 +42,7 @@ function RacketSelectScreen() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const rackets: RacketType[] = ['normal', 'speed', 'wide'];
+        const rackets: RacketType[] = ['normal', 'power', 'wide'];
         const currentIndex = rackets.indexOf(selectedRacket);
         let newIndex = currentIndex;
         
@@ -64,7 +64,7 @@ function RacketSelectScreen() {
 
   const racketDescriptions: Record<RacketType, string> = {
     normal: 'バランスの良い性能←初めての方にオススメ',
-    speed: 'スマッシュの速度が1.2倍になるが当たり判定が20%低下',
+    power: 'スマッシュの速度が1.2倍になるが当たり判定が20%低下',
     wide: '当たり判定が1.2倍になるが移動速度が20%低下',
   };
 
@@ -90,8 +90,8 @@ function RacketSelectScreen() {
           </div>
           
           <div 
-            className={`racket-card ${selectedRacket === 'speed' ? 'selected' : ''}`}
-            onClick={() => handleRacketSelect('speed')}
+            className={`racket-card ${selectedRacket === 'power' ? 'selected' : ''}`}
+            onClick={() => handleRacketSelect('power')}
           >
             <img
               src="./images/speed.png"
@@ -99,7 +99,7 @@ function RacketSelectScreen() {
                className='racket-img'
             />
             <h3>スピードラケット</h3>
-            <p>{racketDescriptions.speed}</p>
+            <p>{racketDescriptions.power}</p>
           </div>
           
           <div 

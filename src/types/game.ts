@@ -1,6 +1,6 @@
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
-export type RacketType = 'normal' | 'speed' | 'wide';
+export type RacketType = 'normal' | 'power' | 'wide';
 
 export type BallType = 'normal' | 'strawberry' | 'heart' | 'star' | 'candy' | 'ribbon';
 
@@ -58,7 +58,7 @@ export const RACKET_STATS: Record<RacketType, RacketStats> = {
     moveSpeed: 5,
     smashSpeed: 1.0,
   },
-  speed: {
+  power: {
     hitBoxWidth: 16,        // 20%低下
     hitBoxHeight: 80,
     moveSpeed: 5,
