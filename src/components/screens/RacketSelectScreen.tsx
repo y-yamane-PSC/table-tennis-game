@@ -61,8 +61,8 @@ function RacketSelectScreen() {
   }, [selectedRacket]);
 
   const racketDescriptions: Record<RacketType, string> = {
-    normal: 'とってもつかいやすいらけっとだよ←はじめてのおともだちにおすすめ！',
-    power: 'たいみんぐよくうったボールが、いつもよりはやくなるよ！',
+    normal: 'とてもつかいやすいラケットだよ（はじめてのおともだちにオススメ！）',
+    power: 'ボールがいつもよりはやくなるよ！',
     wide: 'あてるのがすごくかんたんだよ！',
   };
 
@@ -84,7 +84,7 @@ function RacketSelectScreen() {
               className='racket-img'
             />
             <h3>ノーマルラケット</h3>
-            <p>{racketDescriptions.normal}</p>
+            {selectedRacket === 'normal' && <p>{racketDescriptions.normal}</p>}
           </div>
           
           <div 
@@ -97,7 +97,7 @@ function RacketSelectScreen() {
                className='racket-img'
             />
             <h3>パワーラケット</h3>
-            <p>{racketDescriptions.power}</p>
+            {selectedRacket === 'power' && <p>{racketDescriptions.power}</p>}
           </div>
           
           <div 
@@ -110,7 +110,7 @@ function RacketSelectScreen() {
               className='racket-img'
             />
             <h3>ワイドラケット</h3>
-            <p>{racketDescriptions.wide}</p>
+            {selectedRacket === 'wide' && <p>{racketDescriptions.wide}</p>}
           </div>
         </div>
         
