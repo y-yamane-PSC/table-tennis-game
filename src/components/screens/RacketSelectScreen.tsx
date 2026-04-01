@@ -61,7 +61,7 @@ function RacketSelectScreen() {
   }, [selectedRacket]);
 
   const racketDescriptions: Record<RacketType, string> = {
-    normal: 'とてもつかいやすいラケットだよ（はじめてのおともだちにオススメ！）',
+    normal: 'とてもつかいやすいラケットだよ！',
     power: 'ボールがいつもよりはやくなるよ！',
     wide: 'あてるのがすごくかんたんだよ！',
   };

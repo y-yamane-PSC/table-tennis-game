@@ -8,7 +8,7 @@ export const RACKET_BASE_WIDTH = 20;
 export const RACKET_BASE_HEIGHT = 80;
 
 export const SMASH_DISTANCE = 100;
-export const SMASH_SPEED_MULTIPLIER = 1.5;
+export const SMASH_SPEED_MULTIPLIER = 1.2;
 export const STAR_SMASH_SPEED_MULTIPLIER = 2.25;
 
 export const RALLY_CHANGE_INTERVAL = 5; // 5ラリーごとに変化

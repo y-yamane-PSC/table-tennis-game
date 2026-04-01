@@ -339,8 +339,8 @@ const GameCanvas: React.FC = () => {
       const netLeftBound = TABLE_CENTER_X - (tableWidthAtNet / 2) + 6;
       const netRightBound = TABLE_CENTER_X + (tableWidthAtNet / 2) - 6;
 
-      // 見た目のネットは高いまま、ボールの当たり判定（z座標）だけを下げてシビアさを緩和する（38 -> 24）
-      if (crossedNet && nextBall.x >= netLeftBound && nextBall.x <= netRightBound && nextBall.z < 24 && !nextBall.isNetFault) {
+      // 見た目のネットは高いまま、ボールの当たり判定（z座標）だけを下げてシビアさを緩和する（38 -> 12）
+      if (crossedNet && nextBall.x >= netLeftBound && nextBall.x <= netRightBound && nextBall.z < 12 && !nextBall.isNetFault) {
         // ネット衝突！
         nextBall.isNetFault = true;
         // 大きく減速して手前のコート内にポトリと落ちて転がる動作
