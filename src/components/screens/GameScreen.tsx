@@ -14,6 +14,31 @@ function GameScreen() {
   const { navigateTo } = useScreen();
   const { gameState, setGameState } = useGame();
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
+  const [showQuitDialog, setShowQuitDialog] = useState(false);
+
+  // 中断 / 再開
+  const handlePauseToggle = () => {
+    setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }));
+  };
+
+  // 終了ボタン押下
+  const handleQuitRequest = () => {
+    setGameState(prev => ({ ...prev, isPaused: true }));
+    setShowQuitDialog(true);
+  };
+
+  // 確認ダイアログで「はい」
+  const handleQuitConfirm = () => {
+    setShowQuitDialog(false);
+    setGameState(prev => ({ ...prev, isGameActive: false, isPaused: false }));
+    navigateTo('home');
+  };
+
+  // 確認ダイアログで「キャンセル」
+  const handleQuitCancel = () => {
+    setShowQuitDialog(false);
+    setGameState(prev => ({ ...prev, isPaused: false }));
+  };
   // マウント時にゲームを開始＆スコアを初期化する
   useEffect(() => {
     setGameState(prev => ({
@@ -95,7 +120,48 @@ function GameScreen() {
         <p className="controls-hint">
           「← →」で いどう ／ 「スペース」で サーブ・スマッシュ！
         </p>
+        <div className="game-control-buttons">
+          <button
+            id="btn-pause-resume"
+            className={`game-ctrl-btn ${gameState.isPaused ? 'btn-resume' : 'btn-pause'}`}
+            onClick={handlePauseToggle}
+          >
+            {gameState.isPaused ? '▶ さいかい' : '⏸ ちゅうだん'}
+          </button>
+          <button
+            id="btn-quit"
+            className="game-ctrl-btn btn-quit"
+            onClick={handleQuitRequest}
+          >
+            ✕ おわる
+          </button>
+        </div>
       </footer>
+
+      {/* 終了確認ダイアログ */}
+      {showQuitDialog && (
+        <div className="quit-dialog-overlay">
+          <div className="quit-dialog">
+            <p className="quit-dialog-text">ほんとうに おわりますか？</p>
+            <div className="quit-dialog-buttons">
+              <button
+                id="btn-quit-confirm"
+                className="quit-btn quit-btn-yes"
+                onClick={handleQuitConfirm}
+              >
+                おわる
+              </button>
+              <button
+                id="btn-quit-cancel"
+                className="quit-btn quit-btn-no"
+                onClick={handleQuitCancel}
+              >
+                つづける
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
