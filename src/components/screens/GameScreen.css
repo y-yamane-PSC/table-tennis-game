@@ -1,7 +1,10 @@
 .game-screen-container {
   width: 100vw;
   height: 100vh;
-  background-color: #fff0f5; /* ラベンダーピンク */
+  background-image: url('/img2.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,9 +29,11 @@
 
 .game-header {
   z-index: 10;
-  margin-bottom: -200px;
-  transform: scale(0.8);
+  margin-top: 20px;
+  margin-bottom: 10px;
+  transform: scale(0.7);
   transform-origin: center center;
+  width: auto;
 }
 
 .game-main {
@@ -36,11 +41,12 @@
   z-index: 5;
   border: 8px solid #ffffff;
   border-radius: 20px;
-  box-shadow: 0 0 20px rgba(255, 182, 193, 0.5) ;
-  background-color: #000; /* Canvasの背景 */
-  margin-top: 100px;
+  box-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+  background-color: #000;
   transform: scale(0.7);
-  transform-origin: center center;
+  /* スケール(0.7)で余った上下の余白(108px)を相殺し、レイアウト計算上の高さを合わせる */
+  margin-top: -130px;
+  margin-bottom: -108px;
 }
 
 .canvas-wrapper {
@@ -53,10 +59,11 @@
 }
 
 .game-footer {
-  margin-top: -120px;
   z-index: 10;
-  transform: scale(0.7);
-  transform-origin: center center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .controls-hint {
@@ -66,7 +73,8 @@
   color: #ff69b4;
   font-weight: bold;
   font-size: 1.1rem;
-
+  width: auto;
+  margin-top: 10px;;
 }
 
 /* ポップアップ演出：ふわっと浮き上がるアニメーション */

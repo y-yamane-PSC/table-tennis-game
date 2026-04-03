@@ -20,16 +20,16 @@ export interface Racket {
 
 export const RACKET_TYPES: Record<RacketType, RacketStats> = {
   normal: {
-    hitBoxWidth: 120,     // 横幅
+    hitBoxWidth: 125,     // 横幅
     hitBoxHeight: 20,     // 厚み
     moveSpeed: 500,
     smashSpeed: 2.0,
   },
   power: {
-    hitBoxWidth: 90,      // 横幅
+    hitBoxWidth: 95,      // 横幅
     hitBoxHeight: 16,     // 厚み
     moveSpeed: 700,
-    smashSpeed: 3.0,
+    smashSpeed: 4.0,
   },
   wide: {
     hitBoxWidth: 180,     // 横幅

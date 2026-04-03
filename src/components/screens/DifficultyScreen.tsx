@@ -37,17 +37,17 @@ function DifficultyScreen() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         const difficulties: Difficulty[] = ['easy', 'normal', 'hard'];
         const currentIndex = difficulties.indexOf(selectedDifficulty);
         let newIndex = currentIndex;
-        
-        if (e.key === 'ArrowUp') {
+
+        if (e.key === 'ArrowLeft') {
           newIndex = currentIndex > 0 ? currentIndex - 1 : difficulties.length - 1;
         } else {
           newIndex = currentIndex < difficulties.length - 1 ? currentIndex + 1 : 0;
         }
-        
+
         setSelectedDifficulty(difficulties[newIndex]);
       } else if (e.key === 'Enter' || e.key === ' ') {
         handleStart();
@@ -59,12 +59,12 @@ function DifficultyScreen() {
   }, [selectedDifficulty]);
 
   return (
-    <div className="home-screen">
+    <div className="home-screen screen-transition">
       <div className="home-header">
         <h1 className="title">むずかしさを えらんでね
         </h1>
       </div>
-      
+
       <div className="home-main">
         <div className="difficulty-buttons">
           <Button
@@ -90,31 +90,33 @@ function DifficultyScreen() {
             onClick={() => handleDifficultySelect('hard')}
             isSelected={selectedDifficulty === 'hard'}
             icon="⚡"
-            
+
           >
             むずかしい
           </Button>
         </div>
-        
-        <Button
-          variant="primary"
-          onClick={handleStart}
-          className="start-button"
-        >
-          けってい
-        </Button>
-        <Button
-          variant='primary'
-          onClick={handleBack}
-          className="back-button"
-        >
-          もどる
-        </Button>
+
+        <div className="action-buttons-row">
+          <Button
+            variant="primary"
+            onClick={handleStart}
+            className="start-button"
+          >
+            けってい
+          </Button>
+          <Button
+            variant='primary'
+            onClick={handleBack}
+            className="back-button"
+          >
+            もどる
+          </Button>
+        </div>
       </div>
 
-      
+
       <div className="home-footer">
-        <p>あそびかた：方向キーでえらんで、スペースキーでけってい</p>
+        <p>あそびかた：← →でえらんで、スペースキーでけってい</p>
       </div>
     </div>
   );

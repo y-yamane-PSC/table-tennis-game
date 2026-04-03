@@ -2,10 +2,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   min-height: 100vh;
-  padding: var(--spacing-large);
-  gap: var(--spacing-large);
+  padding: 40px 20px;
   width: 100vw;
   box-sizing: border-box;
   text-align: center;
@@ -14,8 +13,7 @@
 
 .home-header {
   text-align: center;
-  margin-bottom: var(--spacing-large);
-  font-size: 30px;
+  margin-bottom: 20px;
 }
 
 .title {
@@ -23,7 +21,8 @@
   color: var(--color-text-dark);
   margin-bottom: var(--spacing-small);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  padding-bottom: 16px;
+  padding-bottom: 160px;
+
 }
 
 /* .title-decoration {
@@ -41,47 +40,71 @@
 } */
 
 .home-main {
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-large);
+  gap: 40px;
 }
 
 .difficulty-buttons {
   display: flex;
   flex-direction: row;
   gap: 16px;
+  margin-top: 50px;
 }
 
 .difficulty-buttons .button {
-  min-width: 130px; /* 以前より横幅を短く */
-  max-width: 150px;
+  min-width: 130px;
+  /* 以前より横幅を短く */
+  max-width: 300px;
+  height: 120px;
+  font-size: 30px;
+  padding: 10px 40px;
+  border-radius: 50px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease; 
+  display: flex;
+  margin-right: 16px;
+  
 }
 
-.start-button {
+.action-buttons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-top: 24px;
+}
+
+.start-button, .back-button {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 24px auto 0 auto; /* 上部に余白を追加 */
   width: fit-content;
   text-align: center;
-  gap: 32px 0px;
-}
-
-.back-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 24px auto 0 auto; /* 上部に余白を追加 */
-  width: fit-content;
-  text-align: center;
-  gap: 32px 0px;
 }
 
 .home-footer {
-  margin-top: var(--spacing-large);
+  margin-top: 100px;
   text-align: center;
   color: var(--color-text-dark);
   font-size: var(--font-size-small);
   padding-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 10px 40px;
+  border-radius: 40px;
+  box-shadow: 0 8px 32px rgba(255, 182, 193, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 3px solid rgba(255, 255, 255, 0.7);
+
 }

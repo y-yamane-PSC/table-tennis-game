@@ -2,25 +2,29 @@
   padding: var(--spacing-medium) var(--spacing-large);
   font-size: var(--font-size-medium);
   font-family: 'Zen Maru Gothic', sans-serif;
-  border: none;
-  border-radius: 20px;
+  border: 4px solid #fff; /* HomeScreenスタイルに合わせて白枠を設定 */
+  border-radius: 50px; /* HomeScreenに合わせて丸くする */
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-small);
   min-width: 200px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* よりリッチなシャドウ */
+  outline: none;
 }
 
 .button:hover:not(:disabled) {
-  transform: scale(1.05);
-  animation: bounce 0.3s ease;
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  animation: none; /* ホバー時は独自のアニメーションを停止 */
 }
 
 .button:active:not(:disabled) {
   transform: scale(0.95);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .button:disabled {
@@ -28,43 +32,53 @@
   cursor: not-allowed;
 }
 
-@keyframes bounce {
-  0%, 100% { transform: scale(1.05) translateY(0); }
-  50% { transform: scale(1.05) translateY(-3px); }
-}
-
+/* ピンクボタン（やさしい） */
 .button-pink {
-  background: var(--color-button-pink);
+  background: linear-gradient(135deg, var(--color-button-pink) 0%, #fecfef 100%);
   color: var(--color-text-light);
+  --pulse-color: rgba(255, 107, 157, 0.7);
 }
 
+/* ブルーボタン（ふつう） */
 .button-blue {
-  background: var(--color-button-blue);
+  background: linear-gradient(135deg, var(--color-button-blue) 0%, #e0f7fa 100%);
   color: var(--color-text-light);
+  --pulse-color: rgba(135, 206, 235, 0.7);
 }
 
+/* パープルボタン（むずかしい） */
 .button-purple {
-  background: var(--color-button-purple);
+  background: linear-gradient(135deg, var(--color-button-purple) 0%, #f3e5f5 100%);
   color: var(--color-text-light);
+  --pulse-color: rgba(147, 112, 219, 0.7);
 }
 
+/* プライマリボタン（決定・戻る） - すでにHomeScreenのスタートに近いスタイル */
 .button-primary {
   background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
   color: var(--color-text-light);
-  font-weight: bold;
-  animation: sparkle 2s ease-in-out infinite;
+  --pulse-color: rgba(255, 215, 0, 0.7);
 }
 
-@keyframes sparkle {
-  0%, 100% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 10px rgba(255, 215, 0, 0.5); }
-  50% { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 215, 0, 0.8); }
-}
-
+/* 選択されているボタン全体のアニメーション */
 .button.selected {
   transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  animation: pulseSelected 2s infinite;
+  z-index: 5;
+}
+
+.button.selected:hover {
+  transform: scale(1.15) translateY(-5px);
+  animation: none; /* hover中はパルスを止める場合 */
+}
+
+@keyframes pulseSelected {
+  0% { box-shadow: 0 0 0 0 var(--pulse-color); }
+  70% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); } /* 透けるように消える */
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
 .button-icon {
-  font-size: 24px;
+  font-size: 28px;
 }

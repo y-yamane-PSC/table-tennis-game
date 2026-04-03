@@ -4,9 +4,14 @@
   justify-content: center;
   gap: var(--spacing-large);
   padding: var(--spacing-medium);
-  background: rgba(255, 255, 255, 0.8);
+  background: #ffffffcc;
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: scale(0.8);
+  transform-origin: center center;
+  width: fit-content;
+  margin: 0 auto;
+  margin-top: -50px;
 }
 
 .score-item {

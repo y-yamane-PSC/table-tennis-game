@@ -67,7 +67,7 @@ function RacketSelectScreen() {
   };
 
   return (
-    <div className="racket-select-screen">
+    <div className="racket-select-screen screen-transition">
       <div className="racket-select-header">
         <h1>ラケットを えらんでね</h1>
       </div>
@@ -113,21 +113,20 @@ function RacketSelectScreen() {
             {selectedRacket === 'wide' && <p>{racketDescriptions.wide}</p>}
           </div>
         </div>
-        
-        <Button
-          variant="primary"
-          onClick={handleConfirm}
-          className="decision-button"
-        >
-          けってい
-        </Button>
-        <Button
-          variant='primary'
-          onClick={handleBack}
-          className="back-button"
-        >
-          もどる
-        </Button>
+        <div className="action-buttons-row">
+          <Button
+            variant="primary"
+            onClick={handleConfirm}
+          >
+            けってい
+          </Button>
+          <Button
+            variant='primary'
+            onClick={handleBack}
+          >
+            もどる
+          </Button>
+        </div>
       </div>
     </div>
   );

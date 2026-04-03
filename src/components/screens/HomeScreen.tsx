@@ -25,24 +25,33 @@ function HomeScreen() {
             }
         };
         window.addEventListener('keydown', handleKeyDown);
-        // クリーンアップ関数（画面から消える時にリスナーを削除）
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []); // 空の配列を渡して初回のみ実行
+    }, []);
 
     return (
-        <div className="home-main">
-            <h1 className="main-title">ミラクル・ラリー！キャンディ・マジック✨</h1>
+        <div className="home-main screen-transition">
+            <div className="home-overlay">
+                <div className="title-container">
+                    <h1 className="main-title">
+                        <span className="title-line1">ミラクル・ラリー！</span>
+                        <br />
+                        <span className="title-line2">キャンディ・マジック<span className="title-sparkle">✨</span></span>
+                    </h1>
+                </div>
 
-            <Button
-                variant="primary"
-                onClick={handleStart}
-                className="main-start-button"
-            >
-                スタート
-            </Button>
+                <div className="start-button-wrapper">
+                    <Button
+                        variant="primary"
+                        onClick={handleStart}
+                        className="main-start-button"
+                    >
+                        スタート
+                    </Button>
+                    <p className="start-hint">「スペース」か「エンター」でも はじまるよ♪</p>
+                </div>
+            </div>
         </div>
     );
 }
 
 export default HomeScreen;
-

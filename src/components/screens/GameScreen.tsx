@@ -14,31 +14,34 @@ function GameScreen() {
   const { navigateTo } = useScreen();
   const { gameState, setGameState } = useGame();
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
-  const [showQuitDialog, setShowQuitDialog] = useState(false);
 
   // 中断 / 再開
   const handlePauseToggle = () => {
     setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }));
   };
 
-  // 終了ボタン押下
-  const handleQuitRequest = () => {
-    setGameState(prev => ({ ...prev, isPaused: true }));
-    setShowQuitDialog(true);
-  };
-
-  // 確認ダイアログで「はい」
+  // 確認ダイアログで「おわる」
   const handleQuitConfirm = () => {
-    setShowQuitDialog(false);
     setGameState(prev => ({ ...prev, isGameActive: false, isPaused: false }));
     navigateTo('home');
   };
 
-  // 確認ダイアログで「キャンセル」
-  const handleQuitCancel = () => {
-    setShowQuitDialog(false);
+  // 確認ダイアログで「ゲームにもどる」
+  const handleResume = () => {
     setGameState(prev => ({ ...prev, isPaused: false }));
   };
+
+  // Escキーでポーズ切り替え
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escキーでポーズ状態を切り替え
+      if (e.key === 'Escape' && gameState.isGameActive) {
+        handlePauseToggle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState.isGameActive, setGameState]);
   // マウント時にゲームを開始＆スコアを初期化する
   useEffect(() => {
     setGameState(prev => ({
@@ -93,70 +96,57 @@ function GameScreen() {
       {/* 背景の装飾要素（パステルドットなど） */}
       <div className="game-background-decoration" />
 
-      <header className="game-header">
-        <ScoreBoard 
-          playerScore={gameState.playerScore} 
-          cpuScore={gameState.cpuScore} 
-        />
-      </header>
+      <div className="game-content-wrapper">
+        <header className="game-header">
+          <ScoreBoard 
+            playerScore={gameState.playerScore} 
+            cpuScore={gameState.cpuScore} 
+          />
+        </header>
 
-      <main className="game-main">
-        <div className="canvas-wrapper">
-          <GameCanvas />
+        <main className="game-main">
+          <div className="canvas-wrapper">
+            <GameCanvas />
+            
+            {/* ゲームオーバーレイメッセージ */}
+            {activeMessage && (
+              <div className="game-popup-message">
+                {activeMessage}
+              </div>
+            )}
+            
+            {/* ボール変化などのシステムメッセージ */}
+            <MessageDisplay />
+          </div>
+        </main>
+
+        <footer className="game-footer">
+          <p className="controls-hint">
+            「← →」で いどう ／ 「スペース」で サーブ・スマッシュ ／ 「Esc」で ポーズ
+          </p>
           
-          {/* ゲームオーバーレイメッセージ */}
-          {activeMessage && (
-            <div className="game-popup-message">
-              {activeMessage}
-            </div>
-          )}
-          
-          {/* ボール変化などのシステムメッセージ */}
-          <MessageDisplay />
-        </div>
-      </main>
+        </footer>
+      </div>
 
-      <footer className="game-footer">
-        <p className="controls-hint">
-          「← →」で いどう ／ 「スペース」で サーブ・スマッシュ！
-        </p>
-        <div className="game-control-buttons">
-          <button
-            id="btn-pause-resume"
-            className={`game-ctrl-btn ${gameState.isPaused ? 'btn-resume' : 'btn-pause'}`}
-            onClick={handlePauseToggle}
-          >
-            {gameState.isPaused ? '▶ さいかい' : '⏸ ちゅうだん'}
-          </button>
-          <button
-            id="btn-quit"
-            className="game-ctrl-btn btn-quit"
-            onClick={handleQuitRequest}
-          >
-            ✕ おわる
-          </button>
-        </div>
-      </footer>
-
-      {/* 終了確認ダイアログ */}
-      {showQuitDialog && (
+      {/* 共通ポーズダイアログ */}
+      {gameState.isPaused && (
         <div className="quit-dialog-overlay">
           <div className="quit-dialog">
-            <p className="quit-dialog-text">ほんとうに おわりますか？</p>
+            <p className="quit-dialog-text">ゲームを ちゅうだん しています</p>
             <div className="quit-dialog-buttons">
+              <button
+                id="btn-quit-cancel"
+                className="quit-btn quit-btn-no"
+                onClick={handleResume}
+              >
+                ▶ ゲームにもどる
+              </button>
               <button
                 id="btn-quit-confirm"
                 className="quit-btn quit-btn-yes"
                 onClick={handleQuitConfirm}
               >
-                おわる
-              </button>
-              <button
-                id="btn-quit-cancel"
-                className="quit-btn quit-btn-no"
-                onClick={handleQuitCancel}
-              >
-                つづける
+                ✕ おわる
               </button>
             </div>
           </div>

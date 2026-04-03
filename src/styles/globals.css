@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+@import './variables.css';
 
 * {
   margin: 0;
@@ -8,9 +9,24 @@
 
 body {
   font-family: 'Zen Maru Gothic', sans-serif;
-  background: linear-gradient(135deg, #FFE5F1 0%, #E6D5FF 50%, #D5F5E6 100%);
+  background-image: url('/img.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   min-height: 100vh;
   overflow: hidden;
+  margin: 0;
+}
+
+/* 画面切り替え用の共通アニメーションクラス */
+.screen-transition {
+  animation: screenFadeIn 1.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes screenFadeIn {
+  from { opacity: 0; filter: blur(4px); transform: scale(0.98); }
+  to { opacity: 1; filter: blur(0); transform: scale(1); }
 }
 
 #root {
