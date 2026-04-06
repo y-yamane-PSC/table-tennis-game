@@ -38,7 +38,7 @@ export function useBallEffects() {
         break;
     }
   // 4. 重要：修正された新しいボールオブジェクトを返す
-  return nextBall; 
+  return nextBall;
 }, [gameState.rallyCount]);
 
   return { processBallEffects };
