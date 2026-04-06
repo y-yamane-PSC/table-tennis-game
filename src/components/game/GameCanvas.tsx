@@ -422,18 +422,18 @@ const GameCanvas: React.FC = () => {
           smashEffectRef.current = { active: true, x: nextBall.x, y: nextBall.y, timer: 45 };
         }
 
-        // スマッシュの速度計算。相手の球が遅くても「最低保証の速さ」で強烈に打ち返す。
+        // スマッシュの速度計算。サーブ速度(-6.2)の約2倍を基準にする
         let nextVy = 0;
         if (isSmashing) {
-          const baseSmashVelocity = -15 * SMASH_SPEED_MULTIPLIER; // スマッシュの基礎速度（超高速）
+          const baseSmashVelocity = -9 * SMASH_SPEED_MULTIPLIER; // スマッシュの基礎速度（サーブの約1.75倍）
           // ラケットのステータスに完全に依存したスピードを与える
           nextVy = baseSmashVelocity * playerRacket.stats.smashSpeed;
         } else {
           nextVy = -Math.abs(nextBall.vy) * 1.05; // 通常時は今の速度を少しだけ加速して返す
         }
 
-        // スマッシュの最大速度を制限（速すぎると反応不能＆物理演算のすり抜けが起きるため）
-        nextBall.vy = Math.max(nextVy, -26);
+        // スマッシュの最大速度を制限（速すぎると目で追えない＆物理演算がすり抜けるため）
+        nextBall.vy = Math.max(nextVy, -14);
         nextBall.y = playerRacket.y - nextBall.radius; // めり込み防止
         applyRacketAngle(nextBall, playerRacket);
         // 相手（CPU）コート側でバウンドするように高さ初速を調整

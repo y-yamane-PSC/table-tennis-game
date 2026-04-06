@@ -17,12 +17,8 @@ export function useGameLoop(callback: (deltaTime: number) => void) {
   const animate = (time: number) => {
     if (previousTimeRef.current !== undefined) {
       const deltaTime = (time - previousTimeRef.current) / 1000;
-      
-      // ReactDOM.flushSyncの警告を回避するため、
-      // 状態更新を非同期に逃がすか、次のMacrotaskで処理させる
-      setTimeout(() => {
-        callbackRef.current(Math.min(deltaTime, 0.1));
-      }, 0);
+      // 直接呼び出す（setTimeoutを外すことで1フレームに1回だけ確実に呼ばれる）
+      callbackRef.current(Math.min(deltaTime, 0.1));
     }
     previousTimeRef.current = time;
     requestRef.current = requestAnimationFrame(animate);
