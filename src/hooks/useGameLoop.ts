@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Racket } from '../types/game';
+import { Racket } from '../types/racket';
 
 /**
  * ゲームループを管理するフック

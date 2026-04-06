@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/GameContext';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { useInput } from '../../hooks/useInput';
 import { useParticles } from '../../hooks/useParticles';
-import { useBallEffects } from '../../hooks/useBallEffects';
+import { BallType } from '../../types/game';
 // physics.ts から更新関数をインポート
 import { updatePlayerRacket, updateCpuRacketX } from '../../utils/physics';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, BALL_RADIUS, SMASH_SPEED_MULTIPLIER } from '../../utils/constants';
@@ -27,16 +27,32 @@ export const checkRacketCollision = (ball: Ball, racket: Racket): boolean => {
   );
 };
 
+interface HeartClone {
+  x: number; y: number; vx: number; vy: number;
+  z: number; vz: number;
+  active: boolean; isBurst: boolean; burstTimer: number;
+}
+
 const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { gameState, setGameState } = useGame();
   const input = useInput();
   const { particles, createHitParticles, updateParticles } = useParticles();
-  const { processBallEffects } = useBallEffects();
   const lastSpaceDownRef = useRef(false);
   const smashBufferRef = useRef(0); // スマッシュ判定のタイミング猶予
   const smashEffectRef = useRef({ active: false, x: 0, y: 0, timer: 0 }); // スマッシュ演出用
   const scoreLockRef = useRef(false); // 1得点=1点を保証（開発時の二重実行対策）
+
+  // ボール変化用カウンタ・エフェクト管理
+  const shotCountRef = useRef(0);          // 総ショット数（5の倍数でボール変化）
+  const playerSBRemRef = useRef(0);        // イチゴ効果: プレイヤー当たり判定1.2倍の残りショット数
+  const playerCandyRemRef = useRef(0);     // キャンディ被弾: プレイヤー当たり判定0.8倍の残りショット数
+  const cpuSBRemRef = useRef(0);           // イチゴ効果: CPU当たり判定1.2倍の残りショット数
+  const cpuCandyRemRef = useRef(0);        // キャンディ被弾: CPU当たり判定0.8倍の残りショット数
+  const ballEffectRemRef = useRef(0);      // 現在のボールタイプが続く残りショット数
+  const heartClonesRef = useRef<HeartClone[]>([]);  // ハート分身ボール
+  const ballSparkleRef = useRef({ active: false, x: 0, y: 0, timer: 0 }); // キラリ演出
+  const ballMsgRef = useRef<{ text: string; timer: number } | null>(null); // 画面中央メッセージ
 
   // 疑似3D（高さ）用のパラメータ
   const GRAVITY_Z = -0.38; // 1フレームあたりの重力（z方向）
@@ -56,9 +72,95 @@ const GameCanvas: React.FC = () => {
     }
   }, [racketImages]);
 
+  // ---- ボールエフェクト ヘルパー関数 ----
+  const resetBallEffects = () => {
+    shotCountRef.current = 0;
+    playerSBRemRef.current = 0;
+    playerCandyRemRef.current = 0;
+    cpuSBRemRef.current = 0;
+    cpuCandyRemRef.current = 0;
+    ballEffectRemRef.current = 0;
+    heartClonesRef.current = [];
+    ballSparkleRef.current = { active: false, x: 0, y: 0, timer: 0 };
+    ballMsgRef.current = null;
+  };
+  const getPlayerHitboxMult = () => {
+    const sb = playerSBRemRef.current > 0 ? 1.2 : 1.0;
+    const candy = playerCandyRemRef.current > 0 ? 0.8 : 1.0;
+    return sb * candy;
+  };
+  const getCpuHitboxMult = () => {
+    const sb = cpuSBRemRef.current > 0 ? 1.2 : 1.0;
+    const candy = cpuCandyRemRef.current > 0 ? 0.8 : 1.0;
+    return sb * candy;
+  };
+  /** 全エフェクトのショットカウンタを1デクリメント */
+  const onShotDecrement = () => {
+    if (playerSBRemRef.current > 0) playerSBRemRef.current--;
+    if (playerCandyRemRef.current > 0) playerCandyRemRef.current--;
+    if (cpuSBRemRef.current > 0) cpuSBRemRef.current--;
+    if (cpuCandyRemRef.current > 0) cpuCandyRemRef.current--;
+  };
+  /** 5の倍数ショットでボールタイプをランダム変化し、エフェクトを設定する */
+  const applyBallTypeChange = (nextBall: Ball, hitter: 'player' | 'cpu') => {
+    shotCountRef.current++;
+    if (shotCountRef.current % 5 !== 0) {
+      onShotDecrement();
+      if (ballEffectRemRef.current > 0) {
+        ballEffectRemRef.current--;
+        if (ballEffectRemRef.current === 0 && nextBall.type !== 'normal') {
+          nextBall.type = 'normal';
+        }
+      }
+      return;
+    }
+    // 5の倍数: ランダムにボール変化
+    const types: BallType[] = ['strawberry', 'heart', 'star', 'candy', 'ribbon'];
+    const newType = types[Math.floor(Math.random() * types.length)];
+    nextBall.type = newType;
+    // 2往復(4ショット)か1往復(2ショット)を"残り5 or 3"で管理
+    // (このショット自体をカウントした後デクリメントするため+1)
+    const remBase = (newType === 'strawberry' || newType === 'candy') ? 5 : 3;
+    ballEffectRemRef.current = remBase;
+
+    switch (newType) {
+      case 'strawberry':
+        if (hitter === 'player') {
+          playerSBRemRef.current = remBase;
+          ballMsgRef.current = { text: 'ボールがうちやすくなったよ！', timer: 150 };
+        } else {
+          cpuSBRemRef.current = remBase;
+        }
+        break;
+      case 'candy':
+        if (hitter === 'player') {
+          // プレイヤーが打つ → 相手(CPU)の当たり判定0.8倍
+          cpuCandyRemRef.current = remBase;
+        } else {
+          // CPUが打つ → 相手(プレイヤー)の当たり判定0.8倍
+          playerCandyRemRef.current = remBase;
+          ballMsgRef.current = { text: 'ボールがうちにくくなったよ！', timer: 150 };
+        }
+        break;
+      // heart は呼び出し元でクローン生成が必要なので個別対応
+      // star / ribbon は特別な事前セットアップ不要
+      default:
+        break;
+    }
+    onShotDecrement();
+    if (ballEffectRemRef.current > 0) {
+      ballEffectRemRef.current--;
+      if (ballEffectRemRef.current === 0 && nextBall.type !== 'normal') {
+        nextBall.type = 'normal';
+      }
+    }
+  };
+  // ---- ここまでヘルパー ----
+
   const awardPoint = (winner: 'player' | 'cpu') => {
     if (scoreLockRef.current) return;
     scoreLockRef.current = true;
+    resetBallEffects();
     setGameState(prev => ({
       ...prev,
       playerScore: winner === 'player' ? prev.playerScore + 1 : prev.playerScore,
@@ -355,6 +457,19 @@ const GameCanvas: React.FC = () => {
         nextBall.vz = Math.abs(nextBall.vz) * BOUNCE_Z;
 
         const bounceSide: 'cpu' | 'player' = nextBall.y < NET_Y ? 'cpu' : 'player';
+        const isOpponentCourt = bounceSide !== (nextBall.lastHitBy ?? 'player');
+
+        // リボン: 相手コートバウンド時に左右45度にランダム変化
+        if (nextBall.type === 'ribbon' && isOpponentCourt) {
+          const deflectDir = Math.random() < 0.5 ? 1 : -1;
+          nextBall.vx = deflectDir * Math.abs(nextBall.vy);
+        }
+
+        // ハート: 相手コートバウンド時に「キラリ」演出（本物のみ）
+        if (nextBall.type === 'heart' && isOpponentCourt) {
+          ballSparkleRef.current = { active: true, x: nextBall.x, y: nextBall.y, timer: 25 };
+        }
+
         nextBall.lastBounceSide = bounceSide;
         const nextBounceCount = (nextBall.bounceCount ?? 0) + 1;
         nextBall.bounceCount = nextBounceCount;
@@ -399,73 +514,158 @@ const GameCanvas: React.FC = () => {
       }
 
       // 2. プレイヤーラケット（手前・下）との衝突判定
-      // 下方向に落ちてきた球だけを打てる（連続ヒット/めり込みによる逆反射を防ぐ）
-      if ((nextBall.z ?? 0) <= HITTABLE_Z && nextBall.vy > 0 && checkRacketCollision(nextBall, playerRacket)) {
-        // タイミングよくスペースを直近で押していればスマッシュ発動！
-        let isSmashing = false;
-        if (smashBufferRef.current > 0) {
-          isSmashing = true;
-          smashBufferRef.current = 0; // すぐに消費する
-          // 大文字の「SMASH!!」演出を起動
-          smashEffectRef.current = { active: true, x: nextBall.x, y: nextBall.y, timer: 45 };
-        }
+      // 当たり判定エフェクト倍率を考慮した実効ラケット幅でAABB判定
+      {
+        const pMult = getPlayerHitboxMult();
+        const pEffW = playerRacket.width * pMult;
+        const effPlayer: Racket = {
+          ...playerRacket,
+          x: playerRacket.x - (pEffW - playerRacket.width) / 2,
+          width: pEffW,
+        };
+        if ((nextBall.z ?? 0) <= HITTABLE_Z && nextBall.vy > 0 && checkRacketCollision(nextBall, effPlayer)) {
+          // タイミングよくスペースを直近で押していればスマッシュ発動！
+          let isSmashing = false;
+          if (smashBufferRef.current > 0) {
+            isSmashing = true;
+            smashBufferRef.current = 0;
+            smashEffectRef.current = { active: true, x: nextBall.x, y: nextBall.y, timer: 45 };
+          }
 
-        // スマッシュの速度計算。相手の球が遅くても「最低保証の速さ」で強烈に打ち返す。
-        let nextVy = 0;
-        if (isSmashing) {
-          const baseSmashVelocity = -15 * SMASH_SPEED_MULTIPLIER; // スマッシュの基礎速度（超高速）
-          // ラケットのステータスに完全に依存したスピードを与える
-          nextVy = baseSmashVelocity * playerRacket.stats.smashSpeed;
-        } else {
-          nextVy = -Math.abs(nextBall.vy) * 1.05; // 通常時は今の速度を少しだけ加速して返す
-        }
+          // 星ボールのスマッシュ: 速度1.5倍ボーナス
+          const starMult = (nextBall.type === 'star' && isSmashing) ? 1.5 : 1.0;
 
-        // スマッシュを「本物」の速さにするために最大速度上限を大幅に引き上げ (-55)
-        nextBall.vy = Math.max(nextVy, -55);
-        nextBall.y = playerRacket.y - nextBall.radius; // めり込み防止
-        applyRacketAngle(nextBall, playerRacket);
-        // 相手（CPU）コート側でバウンドするように高さ初速を調整
-        nextBall.z = 0;
-        nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'cpu');
-        nextBall.lastHitBy = 'player';
-        // 卓球: 打ち返した瞬間は状態をリセット
-        nextBall.bounceCount = 0;
-        nextBall.lastBounceSide = null;
-        nextBall.isNetFault = false;
-        
-        // ラリー加算とボール変化判定
-        setGameState(prev => ({ ...prev, rallyCount: prev.rallyCount + 1 }));
-        createHitParticles(nextBall.x, nextBall.y, isSmashing ? 'star' : 'normal');
-        
-        if ((gameState.rallyCount + 1) % 5 === 0) {
-          nextBall = processBallEffects(nextBall);
+          let nextVy = 0;
+          if (isSmashing) {
+            const baseSmashVelocity = -15 * SMASH_SPEED_MULTIPLIER;
+            nextVy = baseSmashVelocity * playerRacket.stats.smashSpeed * starMult;
+          } else {
+            nextVy = -Math.abs(nextBall.vy) * 1.05;
+          }
+
+          nextBall.vy = Math.max(nextVy, -55);
+          nextBall.y = effPlayer.y - nextBall.radius;
+          applyRacketAngle(nextBall, playerRacket);
+          nextBall.z = 0;
+          nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'cpu');
+          nextBall.lastHitBy = 'player';
+          nextBall.bounceCount = 0;
+          nextBall.lastBounceSide = null;
+          nextBall.isNetFault = false;
+
+          setGameState(prev => ({ ...prev, rallyCount: prev.rallyCount + 1 }));
+          createHitParticles(nextBall.x, nextBall.y, isSmashing ? 'star' : 'normal');
+
+          // ハート: 分身クローンを生成（ボールタイプ変化前に現在の速度を使う）
+          const prevType = nextBall.type;
+          applyBallTypeChange(nextBall, 'player');
+
+          if (nextBall.type === 'heart' && prevType !== 'heart') {
+            // 打った直後の速度で±30度に分身
+            const ang = 30 * Math.PI / 180;
+            const c30 = Math.cos(ang), s30 = Math.sin(ang);
+            heartClonesRef.current = [
+              {
+                x: nextBall.x, y: nextBall.y, z: nextBall.z ?? 0, vz: nextBall.vz ?? 0,
+                vx: nextBall.vx * c30 + nextBall.vy * s30,
+                vy: -nextBall.vx * s30 + nextBall.vy * c30,
+                active: true, isBurst: false, burstTimer: 0,
+              },
+              {
+                x: nextBall.x, y: nextBall.y, z: nextBall.z ?? 0, vz: nextBall.vz ?? 0,
+                vx: nextBall.vx * c30 - nextBall.vy * s30,
+                vy: nextBall.vx * s30 + nextBall.vy * c30,
+                active: true, isBurst: false, burstTimer: 0,
+              },
+            ];
+          }
         }
       }
 
       // 3. CPUラケット（奥・上）との衝突判定
-      // 上方向に飛んできた球だけを打てる（連続ヒット/めり込みによる逆反射を防ぐ）
-      if ((nextBall.z ?? 0) <= HITTABLE_Z && nextBall.vy < 0 && checkRacketCollision(nextBall, cpuRacket)) {
-        // 相手（プレイヤー/赤）側に必ず打ち返す
-        nextBall.vy = Math.abs(nextBall.vy) * 1.05; // 手前へ返して加速
-        nextBall.y = cpuRacket.y + cpuRacket.height + nextBall.radius; // めり込み防止
-        applyRacketAngle(nextBall, cpuRacket);
-        // 相手（プレイヤー）コート側でバウンドするように高さ初速を調整
-        nextBall.z = 0;
-        nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'player');
-        nextBall.lastHitBy = 'cpu';
-        // 卓球: 打ち返した瞬間は状態をリセット
-        nextBall.bounceCount = 0;
-        nextBall.lastBounceSide = null;
-        nextBall.isNetFault = false;
-        createHitParticles(nextBall.x, nextBall.y, 'normal');
+      {
+        const cMult = getCpuHitboxMult();
+        const cEffW = cpuRacket.width * cMult;
+        const effCpu: Racket = {
+          ...cpuRacket,
+          x: cpuRacket.x - (cEffW - cpuRacket.width) / 2,
+          width: cEffW,
+        };
+        if ((nextBall.z ?? 0) <= HITTABLE_Z && nextBall.vy < 0 && checkRacketCollision(nextBall, effCpu)) {
+          nextBall.vy = Math.abs(nextBall.vy) * 1.05;
+          nextBall.y = cpuRacket.y + cpuRacket.height + nextBall.radius;
+          applyRacketAngle(nextBall, cpuRacket);
+          nextBall.z = 0;
+          nextBall.vz = computeVzToLandOnOpponentCourt(nextBall.y, nextBall.vy, 'player');
+          nextBall.lastHitBy = 'cpu';
+          nextBall.bounceCount = 0;
+          nextBall.lastBounceSide = null;
+          nextBall.isNetFault = false;
+          createHitParticles(nextBall.x, nextBall.y, 'normal');
+
+          setGameState(prev => ({ ...prev, rallyCount: prev.rallyCount + 1 }));
+
+          const prevTypeCpu = nextBall.type;
+          applyBallTypeChange(nextBall, 'cpu');
+
+          if (nextBall.type === 'heart' && prevTypeCpu !== 'heart') {
+            const ang = 30 * Math.PI / 180;
+            const c30 = Math.cos(ang), s30 = Math.sin(ang);
+            heartClonesRef.current = [
+              {
+                x: nextBall.x, y: nextBall.y, z: nextBall.z ?? 0, vz: nextBall.vz ?? 0,
+                vx: nextBall.vx * c30 + nextBall.vy * s30,
+                vy: -nextBall.vx * s30 + nextBall.vy * c30,
+                active: true, isBurst: false, burstTimer: 0,
+              },
+              {
+                x: nextBall.x, y: nextBall.y, z: nextBall.z ?? 0, vz: nextBall.vz ?? 0,
+                vx: nextBall.vx * c30 - nextBall.vy * s30,
+                vy: nextBall.vx * s30 + nextBall.vy * c30,
+                active: true, isBurst: false, burstTimer: 0,
+              },
+            ];
+          }
+        }
       }
 
       return nextBall;
     });
 
+    // ハートクローンの物理更新
+    if (heartClonesRef.current.length > 0) {
+      heartClonesRef.current = heartClonesRef.current.map(cl => {
+        if (!cl.active) return cl;
+        if (cl.isBurst) {
+          const t = cl.burstTimer - 1;
+          return { ...cl, burstTimer: t, active: t > 0 };
+        }
+        let c = { ...cl };
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vz = (c.vz ?? 0) + GRAVITY_Z;
+        c.z = (c.z ?? 0) + c.vz;
+        if (c.z < 0) { c.z = 0; c.vz = Math.abs(c.vz ?? 0) * BOUNCE_Z; }
+
+        // テーブル外に出たら消去
+        if (c.y < TABLE_TOP_Y - 100 || c.y > TABLE_BOTTOM_Y + 100) return { ...c, active: false };
+
+        // ラケットにぶつかったらはじける演出
+        const colCpu = c.vy < 0 && (c.z ?? 0) <= HITTABLE_Z &&
+          c.x + BALL_RADIUS > cpuRacket.x && c.x - BALL_RADIUS < cpuRacket.x + cpuRacket.width &&
+          c.y + BALL_RADIUS > cpuRacket.y && c.y - BALL_RADIUS < cpuRacket.y + cpuRacket.height;
+        const colPlayer = c.vy > 0 && (c.z ?? 0) <= HITTABLE_Z &&
+          c.x + BALL_RADIUS > playerRacket.x && c.x - BALL_RADIUS < playerRacket.x + playerRacket.width &&
+          c.y + BALL_RADIUS > playerRacket.y && c.y - BALL_RADIUS < playerRacket.y + playerRacket.height;
+        if (colCpu || colPlayer) return { ...c, isBurst: true, burstTimer: 20, vx: 0, vy: 0, vz: 0 };
+
+        return c;
+      });
+    }
+
     // パーティクル更新と描画
     updateParticles(deltaTime);
-    draw(); 
+    draw();
   });
 
   // NOTE: サーブ仕様（プレイヤーサーブ固定）に合わせ、リセットは resetBallToPlayerServe を使用する
@@ -534,6 +734,82 @@ const GameCanvas: React.FC = () => {
       ctx.fillText('SMASH!!', 0, 0);
       
       ctx.restore();
+    }
+
+    // 6. ハートクローンの描画
+    for (const cl of heartClonesRef.current) {
+      if (!cl.active) continue;
+      const clZ = cl.z ?? 0;
+      const clVisualY = cl.y - clZ * Z_TO_SCREEN;
+      if (cl.isBurst) {
+        // はじける演出: 外側に広がるハートの破片
+        const prog = 1 - cl.burstTimer / 20;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, cl.burstTimer / 20);
+        ctx.fillStyle = '#FFB6C1';
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2;
+          const dist = prog * 28;
+          ctx.beginPath();
+          ctx.arc(cl.x + Math.cos(ang) * dist, clVisualY + Math.sin(ang) * dist, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      } else {
+        // 偽物のハートを半透明で描画
+        ctx.save();
+        ctx.globalAlpha = 0.65;
+        ctx.fillStyle = '#FFB6C1';
+        const rd = BALL_RADIUS;
+        ctx.beginPath();
+        ctx.moveTo(cl.x, clVisualY + rd);
+        ctx.bezierCurveTo(cl.x + rd, clVisualY - rd, cl.x + rd * 2, clVisualY + rd, cl.x, clVisualY + rd * 2);
+        ctx.bezierCurveTo(cl.x - rd * 2, clVisualY + rd, cl.x - rd, clVisualY - rd, cl.x, clVisualY + rd);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // 7. ハートのキラリ演出（本物ボール相手コートバウンド時）
+    if (ballSparkleRef.current.active && ballSparkleRef.current.timer > 0) {
+      const sp = ballSparkleRef.current;
+      sp.timer--;
+      if (sp.timer === 0) sp.active = false;
+      const spAlpha = sp.timer / 25;
+      ctx.save();
+      ctx.globalAlpha = spAlpha;
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2.5;
+      for (let i = 0; i < 8; i++) {
+        const ang = (i / 8) * Math.PI * 2;
+        const inner = 8;
+        const outer = 8 + (1 - spAlpha) * 18;
+        ctx.beginPath();
+        ctx.moveTo(sp.x + Math.cos(ang) * inner, sp.y + Math.sin(ang) * inner);
+        ctx.lineTo(sp.x + Math.cos(ang) * outer, sp.y + Math.sin(ang) * outer);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 8. ボール変化メッセージ（画面中央）
+    if (ballMsgRef.current && ballMsgRef.current.timer > 0) {
+      ballMsgRef.current.timer--;
+      const msg = ballMsgRef.current;
+      const fadeAlpha = Math.min(1.0, msg.timer / 30);
+      const riseY = CANVAS_HEIGHT / 2 - (1 - msg.timer / 150) * 30;
+      ctx.save();
+      ctx.globalAlpha = fadeAlpha;
+      ctx.font = '700 36px "Zen Maru Gothic", "M PLUS Rounded 1c", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 6;
+      ctx.strokeText(msg.text, CANVAS_WIDTH / 2, riseY);
+      ctx.fillStyle = '#FF69B4';
+      ctx.fillText(msg.text, CANVAS_WIDTH / 2, riseY);
+      ctx.restore();
+      if (msg.timer === 0) ballMsgRef.current = null;
     }
   };
 
@@ -699,17 +975,85 @@ const GameCanvas: React.FC = () => {
         ctx.fill();
         break;
         
-      case 'heart':
-        // ハートの描画
+      case 'heart': {
+        // ハートの描画（本物）
         ctx.fillStyle = '#FFB6C1';
-        const d = r;
+        const dh = r;
         ctx.beginPath();
-        ctx.moveTo(ball.x, visualY + d);
-        ctx.bezierCurveTo(ball.x + d, visualY - d, ball.x + d * 2, visualY + d, ball.x, visualY + d * 2);
-        ctx.bezierCurveTo(ball.x - d * 2, visualY + d, ball.x - d, visualY - d, ball.x, visualY + d);
+        ctx.moveTo(ball.x, visualY + dh);
+        ctx.bezierCurveTo(ball.x + dh, visualY - dh, ball.x + dh * 2, visualY + dh, ball.x, visualY + dh * 2);
+        ctx.bezierCurveTo(ball.x - dh * 2, visualY + dh, ball.x - dh, visualY - dh, ball.x, visualY + dh);
+        ctx.fill();
+        // ハイライト
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(ball.x - dh * 0.3, visualY + dh * 0.3, dh * 0.35, dh * 0.25, -0.5, 0, Math.PI * 2);
         ctx.fill();
         break;
-  
+      }
+
+      case 'star': {
+        // 星の描画（ゴールド）
+        ctx.fillStyle = '#FFD700';
+        ctx.save();
+        ctx.translate(ball.x, visualY);
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const oAng = (i * 4 * Math.PI / 5) - Math.PI / 2;
+          const iAng = oAng + Math.PI / 5;
+          if (i === 0) ctx.moveTo(Math.cos(oAng) * r, Math.sin(oAng) * r);
+          else ctx.lineTo(Math.cos(oAng) * r, Math.sin(oAng) * r);
+          ctx.lineTo(Math.cos(iAng) * r * 0.42, Math.sin(iAng) * r * 0.42);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#FFA500';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+        break;
+      }
+
+      case 'candy': {
+        // キャンディの描画（水色の丸にストライプ）
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(ball.x, visualY, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#87CEEB';
+        ctx.fill();
+        // ストライプ（クリッピング）
+        ctx.clip();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(ball.x - r * 1.5, visualY - r * 0.4);
+        ctx.lineTo(ball.x + r * 1.5, visualY + r * 0.8);
+        ctx.moveTo(ball.x - r * 1.5, visualY + r * 0.4);
+        ctx.lineTo(ball.x + r * 1.5, visualY + r * 1.6);
+        ctx.stroke();
+        ctx.restore();
+        break;
+      }
+
+      case 'ribbon': {
+        // リボンの描画（パープル丸＋リボン形）
+        ctx.fillStyle = '#DDA0DD';
+        ctx.beginPath();
+        ctx.arc(ball.x, visualY, r, 0, Math.PI * 2);
+        ctx.fill();
+        // リボン
+        ctx.fillStyle = '#9932CC';
+        ctx.save();
+        ctx.translate(ball.x, visualY);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-r * 1.2, -r * 0.8, -r * 1.5, r * 0.3, 0, 0);
+        ctx.bezierCurveTo(r * 1.5, -r * 0.3, r * 1.2, r * 0.8, 0, 0);
+        ctx.fill();
+        ctx.restore();
+        break;
+      }
+
       default:
         // 通常のピンポン玉
         ctx.fillStyle = '#FFE5B4';

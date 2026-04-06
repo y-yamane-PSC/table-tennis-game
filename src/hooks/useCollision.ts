@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
-import { Ball, Racket, RacketType } from '../types/game'; // 型定義からインポート
+import { Ball } from '../types/ball';
+import { Racket } from '../types/racket';
+import { RacketType } from '../types/game';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, BALL_RADIUS, RACKET_BASE_WIDTH, RACKET_BASE_HEIGHT } from '../utils/constants';
 
 export function useCollision() {
@@ -10,7 +12,8 @@ export function useCollision() {
     width: RACKET_BASE_WIDTH,
     height: RACKET_BASE_HEIGHT,
     stats: { hitBoxWidth: 20, hitBoxHeight: 80, moveSpeed: 5, smashSpeed: 1.0 },
-    isRightHanded: true
+    isRightHanded: true,
+    effectMultiplier: 1.0,
   });
 
   // CPUラケットの初期状態
@@ -20,7 +23,8 @@ export function useCollision() {
     width: RACKET_BASE_WIDTH,
     height: RACKET_BASE_HEIGHT,
     stats: { hitBoxWidth: 20, hitBoxHeight: 80, moveSpeed: 5, smashSpeed: 1.0 },
-    isRightHanded: false
+    isRightHanded: false,
+    effectMultiplier: 1.0,
   });
 
   // ボールの初期状態

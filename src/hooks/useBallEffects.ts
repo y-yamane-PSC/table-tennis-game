@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { Ball, Racket, BallType } from '../types/game';
+import { Ball } from '../types/ball';
+import { BallType } from '../types/game';
 import { useGame } from '../contexts/GameContext';
 
 export function useBallEffects() {
