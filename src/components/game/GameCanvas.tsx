@@ -148,17 +148,29 @@ const GameCanvas: React.FC = () => {
   const MIN_LAND_TIME = 10;
   const MAX_LAND_TIME = 60;
   const landVzForTime = (t: number) => Math.max(1, (-0.5 * GRAVITY_Z) * t);
-  const pickLandingY = (side: 'cpu' | 'player') => {
-    // それぞれのコート内（ネットから少し離れた位置）に着地点を置く
-    if (side === 'cpu') return TABLE_TOP_Y + (NET_Y - TABLE_TOP_Y) * 0.62;
-    return NET_Y + (TABLE_BOTTOM_Y - NET_Y) * 0.62;
+  const pickLandingY = (side: 'cpu' | 'player', vy: number = 0) => {
+    // 相手コート内の着地点。スピードが速いほど、より奥（ベースライン寄り）を狙う
+    const speed = Math.abs(vy);
+    const depthRatio = Math.max(0.15, 0.62 - (speed / 25) * 0.47); 
+    if (side === 'cpu') return TABLE_TOP_Y + (NET_Y - TABLE_TOP_Y) * depthRatio;
+    return NET_Y + (TABLE_BOTTOM_Y - NET_Y) * (1 - depthRatio);
   };
   const computeVzToLandOnOpponentCourt = (fromY: number, vy: number, opponent: 'cpu' | 'player') => {
-    const targetY = pickLandingY(opponent);
+    const targetY = pickLandingY(opponent, vy);
     const rawT = (targetY - fromY) / vy;
     const t = Number.isFinite(rawT) ? Math.max(MIN_LAND_TIME, Math.min(MAX_LAND_TIME, rawT)) : 0;
     if (t <= 0) return HIT_LIFT_Z;
-    return landVzForTime(t);
+    
+    let vz = landVzForTime(t);
+    
+    // ネットを越える高度(z>=13)を確実に保証する
+    const tNet = (NET_Y - fromY) / vy;
+    if (tNet > 0) {
+      // z(t) = vz * t + 0.5 * GRAVITY_Z * t^2 >= 13
+      const minVz = (13 / tNet) - 0.5 * GRAVITY_Z * tNet;
+      if (vz < minVz) vz = minVz;
+    }
+    return vz;
   };
 
   // 選択されたラケットのタイプとステータスを取得
@@ -420,8 +432,8 @@ const GameCanvas: React.FC = () => {
           nextVy = -Math.abs(nextBall.vy) * 1.05; // 通常時は今の速度を少しだけ加速して返す
         }
 
-        // スマッシュを「本物」の速さにするために最大速度上限を大幅に引き上げ (-55)
-        nextBall.vy = Math.max(nextVy, -55);
+        // スマッシュの最大速度を制限（速すぎると反応不能＆物理演算のすり抜けが起きるため）
+        nextBall.vy = Math.max(nextVy, -26);
         nextBall.y = playerRacket.y - nextBall.radius; // めり込み防止
         applyRacketAngle(nextBall, playerRacket);
         // 相手（CPU）コート側でバウンドするように高さ初速を調整
