@@ -23,18 +23,18 @@ export const RACKET_TYPES: Record<RacketType, RacketStats> = {
     hitBoxWidth: 125,     // 横幅
     hitBoxHeight: 20,     // 厚み
     moveSpeed: 500,
-    smashSpeed: 2.0,
+    smashSpeed: 1.2,
   },
   power: {
     hitBoxWidth: 95,      // 横幅
     hitBoxHeight: 16,     // 厚み
     moveSpeed: 700,
-    smashSpeed: 4.0,
+    smashSpeed: 2.0,
   },
   wide: {
     hitBoxWidth: 180,     // 横幅
     hitBoxHeight: 24,     // 厚み
     moveSpeed: 250,
-    smashSpeed: 1.0,
+    smashSpeed: 0.9,
   },
 };
