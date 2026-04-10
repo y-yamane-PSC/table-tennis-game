@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import ScoreBoard from '../ui/ScoreBoard';
@@ -65,31 +65,43 @@ function GameScreen() {
     }
   }, [gameState.playerScore, gameState.cpuScore, navigateTo]);
 
-  // 2点以上連続得点した時のみポジティブなフィードバックを表示
-  const [prevCpuScore, setPrevCpuScore] = useState(gameState.cpuScore);
+  // 連続得点をトラッキングしてポジティブなフィードバックを表示
+  const consecutiveWinsRef = useRef(0);
+  const prevScoresRef = useRef({ player: gameState.playerScore, cpu: gameState.cpuScore });
 
   useEffect(() => {
-    // プレイヤーのスコアが増加し、かつ CPU が直近で点を取っていなければ連続得点とみなす
-    // ただし 2点目以降のみ表示(1点目=初得点では表示しない)
-    if (
-      gameState.playerScore >= 2 && // 2点以上
-      gameState.cpuScore === prevCpuScore && // CPUの得点が変わっていない = 連続
-      gameState.isGameActive
-    ) {
+    if (!gameState.isGameActive) return;
+
+    const prev = prevScoresRef.current;
+    let newConsecutiveWins = consecutiveWinsRef.current;
+    let shouldShowMessage = false;
+
+    // プレイヤーが得点したか判定
+    if (gameState.playerScore > prev.player) {
+      newConsecutiveWins += 1;
+      // 2点以上連続得点した場合はメッセージを表示対象にする
+      if (newConsecutiveWins >= 2) {
+        shouldShowMessage = true;
+      }
+    } 
+    // CPUが得点した場合は連続得点をリセット
+    else if (gameState.cpuScore > prev.cpu) {
+      newConsecutiveWins = 0;
+    }
+
+    // 状態を更新
+    consecutiveWinsRef.current = newConsecutiveWins;
+    prevScoresRef.current = { player: gameState.playerScore, cpu: gameState.cpuScore };
+
+    // メッセージの表示処理を一度だけ行う
+    if (shouldShowMessage) {
       const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
       const randomMsg = positiveMessages[Math.floor(Math.random() * positiveMessages.length)];
       setActiveMessage(randomMsg);
       const timer = setTimeout(() => setActiveMessage(null), 2000);
       return () => clearTimeout(timer);
     }
-
-    // CPU が得点した場合、prevCpuScoreを更新
-    if (gameState.cpuScore !== prevCpuScore) {
-      setPrevCpuScore(gameState.cpuScore);
-    }
-    // プレイヤーが点を取っても、上記ifでなければprevCpuScoreの更新のみ
-    // (もう連続得点でなくなったのでフィードバック非表示)
-  }, [gameState.playerScore, gameState.cpuScore, gameState.isGameActive, prevCpuScore]);
+  }, [gameState.playerScore, gameState.cpuScore, gameState.isGameActive]);
 
   return (
     <div className="game-screen-container">
