@@ -166,6 +166,7 @@ const GameCanvas: React.FC = () => {
       playerScore: winner === 'player' ? prev.playerScore + 1 : prev.playerScore,
       cpuScore: winner === 'cpu' ? prev.cpuScore + 1 : prev.cpuScore,
       rallyCount: 0,
+      lastScorer: winner,
     }));
   };
   const opponentOf = (side: 'player' | 'cpu') => (side === 'player' ? 'cpu' : 'player');
@@ -393,8 +394,9 @@ const GameCanvas: React.FC = () => {
       if (spaceJustPressed) {
         // サーブ開始（奥方向へ）
         setIsServe(false);
-        // 次のラリー開始 = 得点ロック解除
+        // 次のラリー開始 = 得点ロック解除・lastScorerリセット
         scoreLockRef.current = false;
+        setGameState(prev => ({ ...prev, lastScorer: null }));
         setBall((prev) => {
           const serveVy = -6.2;
           const serveVx = (Math.random() - 0.5) * 3.2;

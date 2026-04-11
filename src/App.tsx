@@ -25,6 +25,7 @@ function App() {
     isGameActive: false,
     isPaused: false,
     config: config,
+    lastScorer: null,
   });
 
   // config更新時にgameState内のconfigも同期させる

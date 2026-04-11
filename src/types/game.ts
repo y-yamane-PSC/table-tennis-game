@@ -19,6 +19,7 @@ export interface GameState {
   isGameActive: boolean;
   isPaused: boolean;
   config: GameConfig;
+  lastScorer: 'player' | 'cpu' | null;
 }
 
 

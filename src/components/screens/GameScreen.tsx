@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import ScoreBoard from '../ui/ScoreBoard';
@@ -13,7 +13,28 @@ import './GameScreen.css';
 function GameScreen() {
   const { navigateTo } = useScreen();
   const { gameState, setGameState } = useGame();
-  const [activeMessage, setActiveMessage] = useState<string | null>(null);
+
+  const [showMessage, setShowMessage] = useState(false);
+  const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
+  const scoreMsgRef = useRef({ score: -1, text: '' });
+  if (gameState.playerScore !== scoreMsgRef.current.score) {
+    scoreMsgRef.current = {
+      score: gameState.playerScore,
+      text: positiveMessages[Math.floor(Math.random() * positiveMessages.length)],
+    };
+  }
+
+  // プレイヤー得点時のみメッセージを表示
+  useEffect(() => {
+    if (gameState.playerScore > 0) {
+      setShowMessage(true);
+    }
+  }, [gameState.playerScore]);
+
+  // CPU得点時は必ずメッセージを非表示
+  useEffect(() => {
+    setShowMessage(false);
+  }, [gameState.cpuScore]);
 
   // 中断 / 再開
   const handlePauseToggle = () => {
@@ -51,6 +72,7 @@ function GameScreen() {
       rallyCount: 0,
       isGameActive: true,
       isPaused: false,
+      lastScorer: null,
     }));
   }, [setGameState]);
 
@@ -64,44 +86,6 @@ function GameScreen() {
       return () => clearTimeout(timer);
     }
   }, [gameState.playerScore, gameState.cpuScore, navigateTo]);
-
-  // 連続得点をトラッキングしてポジティブなフィードバックを表示
-  const consecutiveWinsRef = useRef(0);
-  const prevScoresRef = useRef({ player: gameState.playerScore, cpu: gameState.cpuScore });
-
-  useEffect(() => {
-    if (!gameState.isGameActive) return;
-
-    const prev = prevScoresRef.current;
-    let newConsecutiveWins = consecutiveWinsRef.current;
-    let shouldShowMessage = false;
-
-    // プレイヤーが得点したか判定
-    if (gameState.playerScore > prev.player) {
-      newConsecutiveWins += 1;
-      // 2点以上連続得点した場合はメッセージを表示対象にする
-      if (newConsecutiveWins >= 2) {
-        shouldShowMessage = true;
-      }
-    } 
-    // CPUが得点した場合は連続得点をリセット
-    else if (gameState.cpuScore > prev.cpu) {
-      newConsecutiveWins = 0;
-    }
-
-    // 状態を更新
-    consecutiveWinsRef.current = newConsecutiveWins;
-    prevScoresRef.current = { player: gameState.playerScore, cpu: gameState.cpuScore };
-
-    // メッセージの表示処理を一度だけ行う
-    if (shouldShowMessage) {
-      const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
-      const randomMsg = positiveMessages[Math.floor(Math.random() * positiveMessages.length)];
-      setActiveMessage(randomMsg);
-      const timer = setTimeout(() => setActiveMessage(null), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [gameState.playerScore, gameState.cpuScore, gameState.isGameActive]);
 
   return (
     <div className="game-screen-container">
@@ -120,10 +104,10 @@ function GameScreen() {
           <div className="canvas-wrapper">
             <GameCanvas />
             
-            {/* ゲームオーバーレイメッセージ */}
-            {activeMessage && (
-              <div className="game-popup-message">
-                {activeMessage}
+            {/* ゲームオーバーレイメッセージ（プレイヤー得点時のみ表示） */}
+            {showMessage && (
+              <div key={gameState.playerScore} className="game-popup-message">
+                {scoreMsgRef.current.text}
               </div>
             )}
             
