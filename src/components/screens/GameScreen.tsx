@@ -15,6 +15,7 @@ function GameScreen() {
   const { gameState, setGameState } = useGame();
 
   const [showMessage, setShowMessage] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
   const scoreMsgRef = useRef({ score: -1, text: '' });
   if (gameState.playerScore !== scoreMsgRef.current.score) {
@@ -102,7 +103,7 @@ function GameScreen() {
 
         <main className="game-main">
           <div className="canvas-wrapper">
-            <GameCanvas />
+            <GameCanvas soundEnabled={soundEnabled} />
             
             {/* ゲームオーバーレイメッセージ（プレイヤー得点時のみ表示） */}
             {showMessage && (
@@ -120,7 +121,14 @@ function GameScreen() {
           <p className="controls-hint">
             「← →」で いどう ／ 「スペース」で サーブ・スマッシュ ／ 「Esc」で ポーズ
           </p>
-          
+          <button
+            className={`btn-sound ${soundEnabled ? 'btn-sound-on' : 'btn-sound-off'}`}
+            onClick={() => setSoundEnabled(prev => !prev)}
+            onKeyDown={(e) => { if (e.key === ' ') e.preventDefault(); }}
+            aria-label={soundEnabled ? 'サウンドをオフにする' : 'サウンドをオンにする'}
+          >
+            {soundEnabled ? '♪ ON' : '♪ OFF'}
+          </button>
         </footer>
       </div>
 

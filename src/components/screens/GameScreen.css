@@ -59,11 +59,14 @@
 }
 
 .game-footer {
-  z-index: 10;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  width: fit-content;
+  position: relative;
+  z-index: 20;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .controls-hint {
@@ -235,4 +238,39 @@
   background: linear-gradient(135deg, #b8eccc, #7ed4a0);
   border-color: #4caa70;
   color: #1a4a30;
+}
+
+/* サウンドボタン */
+.btn-sound {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+.btn-sound:hover {
+  transform: scale(1.08) translateY(-2px);
+}
+
+.btn-sound:active {
+  transform: scale(0.96);
+}
+
+.btn-sound-on {
+  background: linear-gradient(135deg, #ffe0b2, #ffb74d);
+  border-color: #f08030;
+  color: #7a3a00;
+}
+
+.btn-sound-off {
+  background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+  border-color: #9e9e9e;
+  color: #424242;
+  opacity: 0.75;
 }

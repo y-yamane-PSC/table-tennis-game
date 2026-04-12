@@ -33,7 +33,11 @@ interface HeartClone {
   active: boolean; isBurst: boolean; burstTimer: number;
 }
 
-const GameCanvas: React.FC = () => {
+interface GameCanvasProps {
+  soundEnabled?: boolean;
+}
+
+const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { gameState, setGameState } = useGame();
   const input = useInput();
@@ -53,6 +57,8 @@ const GameCanvas: React.FC = () => {
   const heartClonesRef = useRef<HeartClone[]>([]);  // ハート分身ボール
   const ballSparkleRef = useRef({ active: false, x: 0, y: 0, timer: 0 }); // キラリ演出
   const ballMsgRef = useRef<{ text: string; timer: number } | null>(null); // 画面中央メッセージ
+  const hitSoundRef = useRef<HTMLAudioElement | null>(null); // 打球音
+  const prevRallyCountRef = useRef(0); // rallyCount増加を検知するための前回値
 
   // 疑似3D（高さ）用のパラメータ
   const GRAVITY_Z = -0.38; // 1フレームあたりの重力（z方向）
@@ -345,6 +351,18 @@ const GameCanvas: React.FC = () => {
     isReal: true,
     effectRemainingRallies: 0,
   });
+
+  // rallyCountが増加したとき（=打球時）に音を再生する
+  useEffect(() => {
+    if (soundEnabled && gameState.rallyCount > prevRallyCountRef.current) {
+      if (!hitSoundRef.current) {
+        hitSoundRef.current = new Audio('./sounds/hit.mp3');
+      }
+      hitSoundRef.current.currentTime = 0;
+      hitSoundRef.current.play().catch(e => console.warn('Hit sound error:', e));
+    }
+    prevRallyCountRef.current = gameState.rallyCount;
+  }, [gameState.rallyCount, soundEnabled]);
 
   // --- 2. ゲームループ ---
   useGameLoop((deltaTime) => {
