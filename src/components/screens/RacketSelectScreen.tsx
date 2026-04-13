@@ -3,6 +3,9 @@ import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
 import { RacketType } from '../../types/game';
 import Button from '../ui/Button';
+import normalImgSrc from '../../assets/images/normal.png';
+import powerImgSrc from '../../assets/images/power.png';
+import wideImgSrc from '../../assets/images/wide.png';
 import './RacketSelectScreen.css';
 
 function RacketSelectScreen() {
@@ -79,7 +82,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('normal')}
           >
             <img
-              src="./images/normal.png"
+              src={normalImgSrc}
               alt="ノーマルラケット"
               className='racket-img'
             />
@@ -92,7 +95,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('power')}
           >
             <img
-              src="./images/power.png"
+              src={powerImgSrc}
               alt="パワーラケット"
                className='racket-img'
             />
@@ -105,7 +108,7 @@ function RacketSelectScreen() {
             onClick={() => handleRacketSelect('wide')}
           >
             <img
-              src="./images/wide.png"
+              src={wideImgSrc}
               alt="ワイドラケット"
               className='racket-img'
             />

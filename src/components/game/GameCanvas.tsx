@@ -10,6 +10,10 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, BALL_RADIUS, SMASH_SPEED_MULTIPLIER } from
 import { Racket, RACKET_TYPES } from '../../types/racket';
 import { Ball } from '../../types/ball';
 
+import normalImgSrc from '../../assets/images/normal.png';
+import powerImgSrc from '../../assets/images/power.png';
+import wideImgSrc from '../../assets/images/wide.png';
+
 /**
  * ボールとラケットの衝突判定を行う
  * @param ball 現在のボールの状態
@@ -72,9 +76,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
   const racketImages = useRef<Record<string, HTMLImageElement>>({}).current;
   useEffect(() => {
     if (!racketImages['normal']) {
-      const normalImg = new Image(); normalImg.src = './images/normal.png'; racketImages['normal'] = normalImg;
-      const speedImg = new Image(); speedImg.src = './images/power.png'; racketImages['power'] = speedImg;
-      const wideImg = new Image(); wideImg.src = './images/wide.png'; racketImages['wide'] = wideImg;
+      const normalImg = new Image(); normalImg.src = normalImgSrc; racketImages['normal'] = normalImg;
+      const speedImg = new Image(); speedImg.src = powerImgSrc; racketImages['power'] = speedImg;
+      const wideImg = new Image(); wideImg.src = wideImgSrc; racketImages['wide'] = wideImg;
     }
   }, [racketImages]);
 
