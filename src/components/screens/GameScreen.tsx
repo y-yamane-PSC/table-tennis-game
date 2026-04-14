@@ -15,7 +15,8 @@ function GameScreen() {
   const { gameState, setGameState } = useGame();
 
   const [showMessage, setShowMessage] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const positiveMessages = ['やったね！', 'すごい！', 'そのちょうし！'];
   const scoreMsgRef = useRef({ score: -1, text: '' });
   if (gameState.playerScore !== scoreMsgRef.current.score) {
@@ -45,7 +46,10 @@ function GameScreen() {
   // 確認ダイアログで「おわる」
   const handleQuitConfirm = () => {
     setGameState(prev => ({ ...prev, isGameActive: false, isPaused: false }));
-    navigateTo('home');
+    setIsExiting(true);
+    setTimeout(() => {
+      navigateTo('home');
+    }, 500);
   };
 
   // 確認ダイアログで「ゲームにもどる」
@@ -82,16 +86,29 @@ function GameScreen() {
     if (gameState.playerScore >= 11 || gameState.cpuScore >= 11) {
       // 少し余韻を残してからリザルト画面へ
       const timer = setTimeout(() => {
-        navigateTo('result');
+        setIsExiting(true);
+        setTimeout(() => {
+          navigateTo('result');
+        }, 500);
       }, 1500);
       return () => clearTimeout(timer);
     }
   }, [gameState.playerScore, gameState.cpuScore, navigateTo]);
 
   return (
-    <div className="game-screen-container">
+    <div className={`game-screen-container ${isExiting ? 'fade-out' : 'fade-in'}`}>
       {/* 背景の装飾要素（パステルドットなど） */}
       <div className="game-background-decoration" />
+
+      {/* 画面右上のサウンド切り替えボタン */}
+      <button
+        className={`btn-sound ${soundEnabled ? 'btn-sound-on' : 'btn-sound-off'}`}
+        onClick={() => setSoundEnabled(prev => !prev)}
+        onKeyDown={(e) => { if (e.key === ' ') e.preventDefault(); }}
+        aria-label={soundEnabled ? 'サウンドをオフにする' : 'サウンドをオンにする'}
+      >
+        {soundEnabled ? '♪ ON' : '♪ OFF'}
+      </button>
 
       <div className="game-content-wrapper">
         <header className="game-header">
@@ -121,14 +138,6 @@ function GameScreen() {
           <p className="controls-hint">
             「← →」で いどう ／ 「スペース」で サーブ・スマッシュ ／ 「Esc」で ポーズ
           </p>
-          <button
-            className={`btn-sound ${soundEnabled ? 'btn-sound-on' : 'btn-sound-off'}`}
-            onClick={() => setSoundEnabled(prev => !prev)}
-            onKeyDown={(e) => { if (e.key === ' ') e.preventDefault(); }}
-            aria-label={soundEnabled ? 'サウンドをオフにする' : 'サウンドをオンにする'}
-          >
-            {soundEnabled ? '♪ ON' : '♪ OFF'}
-          </button>
         </footer>
       </div>
 

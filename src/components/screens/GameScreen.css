@@ -242,6 +242,10 @@
 
 /* サウンドボタン */
 .btn-sound {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 1rem;
   font-weight: bold;
@@ -273,4 +277,23 @@
   border-color: #9e9e9e;
   color: #424242;
   opacity: 0.75;
+}
+
+/* フェードアニメーション */
+.fade-in {
+  animation: fadeInScreen 0.5s ease-out forwards;
+}
+
+.fade-out {
+  animation: fadeOutScreen 0.5s ease-in forwards;
+}
+
+@keyframes fadeInScreen {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutScreen {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
