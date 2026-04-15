@@ -721,7 +721,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
     drawTable(ctx);
   
     // 3. ラケットとボールを描画
-    drawRacket(ctx, cpuRacket, '#87CEEB', false); // 奥のCPUを手前に  
+    const cMult = getCpuHitboxMult();
+    const cEffW = cpuRacket.width * cMult;
+    const drawingCpuRacket: Racket = {
+      ...cpuRacket,
+      x: cpuRacket.x - (cEffW - cpuRacket.width) / 2,
+      width: cEffW,
+    };
+    drawRacket(ctx, drawingCpuRacket, '#87CEEB', false); // 奥のCPUを手前に  
     
     drawBallTrajectory(ctx, ball);
     drawBall(ctx, ball);
@@ -730,7 +737,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
     if (isServe) {
       ctx.globalAlpha = 0.6; // サーブ時はボールが透けて見えるように
     }
-    drawRacket(ctx, playerRacket, '#FFB6C1', true, currentRacketType); 
+    const pMult = getPlayerHitboxMult();
+    const pEffW = playerRacket.width * pMult;
+    const drawingPlayerRacket: Racket = {
+      ...playerRacket,
+      x: playerRacket.x - (pEffW - playerRacket.width) / 2,
+      width: pEffW,
+    };
+    drawRacket(ctx, drawingPlayerRacket, '#FFB6C1', true, currentRacketType); 
     ctx.globalAlpha = 1.0;
     
     // 4. パーティクル（キラキラ）の描画
@@ -1004,13 +1018,44 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
     
     // ボールの種類（type）によって見た目を変える
     switch (ball.type) {
-      case 'strawberry':
-        // イチゴの描画（赤くて種があるイメージ）
-        ctx.fillStyle = '#FF6B9D';
+      case 'strawberry': {
+        // イチゴの描画（ヘタと種を追加したリッチなデザイン）
+        ctx.save();
+        ctx.translate(ball.x, visualY);
+        // 赤い本体
+        ctx.fillStyle = '#FF3B3B';
         ctx.beginPath();
-        ctx.ellipse(ball.x, visualY, r, r * 1.2, 0, 0, Math.PI * 2);
+        ctx.moveTo(0, -r);
+        ctx.bezierCurveTo(r * 1.2, -r * 0.8, r * 1.2, r * 0.8, 0, r * 1.2);
+        ctx.bezierCurveTo(-r * 1.2, r * 0.8, -r * 1.2, -r * 0.8, 0, -r);
         ctx.fill();
+        // 種（黄色い点）
+        ctx.fillStyle = '#FFE975';
+        const seeds = [
+          {x: -r*0.4, y: -r*0.3}, {x: r*0.4, y: -r*0.3},
+          {x: 0, y: 0},
+          {x: -r*0.5, y: r*0.4}, {x: r*0.5, y: r*0.4},
+          {x: 0, y: r*0.7}
+        ];
+        seeds.forEach(s => {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, r * 0.15, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        // ヘタ（緑色の葉っぱ）
+        ctx.fillStyle = '#4CAF50';
+        ctx.beginPath();
+        ctx.moveTo(0, -r*0.5);
+        ctx.lineTo(-r*0.8, -r*1.1);
+        ctx.lineTo(-r*0.2, -r*0.9);
+        ctx.lineTo(0, -r*1.3);
+        ctx.lineTo(r*0.2, -r*0.9);
+        ctx.lineTo(r*0.8, -r*1.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
         break;
+      }
         
       case 'heart': {
         // ハートの描画（本物）
@@ -1052,41 +1097,61 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ soundEnabled = true }) => {
       }
 
       case 'candy': {
-        // キャンディの描画（水色の丸にストライプ）
+        // キャンディの描画（包み紙つきのキャンディ）
         ctx.save();
+        ctx.translate(ball.x, visualY);
+        const rotationAngle = (ball.x + ball.y) * 0.05; // 移動に合わせて少し回転
+        ctx.rotate(rotationAngle);
+        // 包み紙（左右）
+        ctx.fillStyle = '#FFB6C1'; 
         ctx.beginPath();
-        ctx.arc(ball.x, visualY, r, 0, Math.PI * 2);
-        ctx.fillStyle = '#87CEEB';
-        ctx.fill();
-        // ストライプ（クリッピング）
-        ctx.clip();
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 3.5;
+        ctx.moveTo(-r*0.8, 0); ctx.lineTo(-r*2.0, -r*0.8);
+        ctx.lineTo(-r*1.8, 0); ctx.lineTo(-r*2.0, r*0.8);
+        ctx.closePath(); ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(ball.x - r * 1.5, visualY - r * 0.4);
-        ctx.lineTo(ball.x + r * 1.5, visualY + r * 0.8);
-        ctx.moveTo(ball.x - r * 1.5, visualY + r * 0.4);
-        ctx.lineTo(ball.x + r * 1.5, visualY + r * 1.6);
+        ctx.moveTo(r*0.8, 0); ctx.lineTo(r*2.0, -r*0.8);
+        ctx.lineTo(r*1.8, 0); ctx.lineTo(r*2.0, r*0.8);
+        ctx.closePath(); ctx.fill();
+        // 中央のキャンディ本体
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF'; ctx.fill();
+        // うずまき模様
+        ctx.strokeStyle = '#87CEEB';
+        ctx.lineWidth = r * 0.4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(0, 0, r*0.5, Math.PI, Math.PI * 2.5);
         ctx.stroke();
         ctx.restore();
         break;
       }
 
       case 'ribbon': {
-        // リボンの描画（パープル丸＋リボン形）
-        ctx.fillStyle = '#DDA0DD';
-        ctx.beginPath();
-        ctx.arc(ball.x, visualY, r, 0, Math.PI * 2);
-        ctx.fill();
-        // リボン
-        ctx.fillStyle = '#9932CC';
+        // リボンの描画（立派な蝶結び）
         ctx.save();
         ctx.translate(ball.x, visualY);
+        const bgColor = '#DDA0DD'; 
+        const ribbonColor = '#9932CC'; 
+        const lightRibbonColor = '#BA55D3'; 
+        // ベースのボール
+        ctx.fillStyle = bgColor;
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-r * 1.2, -r * 0.8, -r * 1.5, r * 0.3, 0, 0);
-        ctx.bezierCurveTo(r * 1.5, -r * 0.3, r * 1.2, r * 0.8, 0, 0);
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.fill();
+        // リボン下部の垂れ
+        ctx.fillStyle = ribbonColor;
+        ctx.beginPath();
+        ctx.moveTo(-r*0.2, r*0.5); ctx.lineTo(-r*0.8, r*1.5);
+        ctx.lineTo(-r*0.1, r*1.2); ctx.lineTo(0, r*0.8);
+        ctx.lineTo(r*0.1, r*1.2); ctx.lineTo(r*0.8, r*1.5);
+        ctx.lineTo(r*0.2, r*0.5); ctx.closePath(); ctx.fill();
+        // リボンの輪（左右）
+        ctx.fillStyle = lightRibbonColor;
+        ctx.beginPath(); ctx.ellipse(-r*0.6, 0, r*0.7, r*0.4, -0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(r*0.6, 0, r*0.7, r*0.4, 0.2, 0, Math.PI * 2); ctx.fill();
+        // 中央の結び目
+        ctx.fillStyle = ribbonColor;
+        ctx.beginPath(); ctx.arc(0, 0, r*0.35, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
         break;
       }
