@@ -47,6 +47,13 @@ function HomeScreen() {
                     >
                         スタート
                     </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => navigateTo('changelog')}
+                        className="main-changelog-button"
+                    >
+                        変更履歴
+                    </Button>
                     <p className="start-hint">「スペース」か「エンター」でも はじまるよ♪</p>
                 </div>
             </div>

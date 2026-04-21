@@ -6,6 +6,7 @@ import DifficultyScreen from './components/screens/DifficultyScreen'
 import RacketSelectScreen from './components/screens/RacketSelectScreen';
 import GameScreen from './components/screens/GameScreen';
 import ResultScreen from './components/screens/ResultScreen';
+import ChangelogScreen from './components/screens/ChangelogScreen';
 import { Screen, GameState, GameConfig } from './types/game';
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
         {currentScreen === 'racketSelect' && <RacketSelectScreen />}
         {currentScreen === 'game' && <GameScreen />}
         {currentScreen === 'result' && <ResultScreen />}
+        {currentScreen === 'changelog' && <ChangelogScreen />}
       </GameContext.Provider>
     </ScreenContext.Provider>
   );
