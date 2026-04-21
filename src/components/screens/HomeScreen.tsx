@@ -52,7 +52,7 @@ function HomeScreen() {
                         onClick={() => navigateTo('changelog')}
                         className="main-changelog-button"
                     >
-                        へんこうの おしらせ
+                        へんこう りれき
                     </Button>
                     <p className="start-hint">「スペース」か「エンター」でも はじまるよ♪</p>
                 </div>
