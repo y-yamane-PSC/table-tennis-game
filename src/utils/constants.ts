@@ -1,5 +1,9 @@
-export const CANVAS_WIDTH = 1280;
+export const CANVAS_WIDTH = 1440;
 export const CANVAS_HEIGHT = 720;
+
+// コート寸法（キャンバスサイズから独立した固定値）
+export const TABLE_TOP_WIDTH_PX = 704;   // コート奥側の幅（固定）
+export const TABLE_BOTTOM_WIDTH_PX = 1178; // コート手前側の幅（固定）
 
 export const BALL_BASE_SPEED = 5;
 export const BALL_RADIUS = 10;

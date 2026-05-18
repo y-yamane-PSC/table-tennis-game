@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
+import { useSoundContext } from '../../contexts/SoundContext';
 import { Difficulty } from '../../types/game';
 import Button from '../ui/Button';
 import './DifficultyScreen.css';
@@ -8,13 +9,16 @@ import './DifficultyScreen.css';
 function DifficultyScreen() {
   const { navigateTo } = useScreen();
   const { gameState, setGameState } = useGame();
+  const { sound } = useSoundContext();
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('normal');
 
   const handleDifficultySelect = (difficulty: Difficulty) => {
+    sound.playButton();
     setSelectedDifficulty(difficulty);
   };
 
   const handleStart = () => {
+    sound.playButton();
     setGameState(prev => ({
       ...prev,
       config: {
@@ -26,6 +30,7 @@ function DifficultyScreen() {
   };
 
   const handleBack = () => {
+    sound.playButton();
     setGameState(prev => ({
       ...prev,
       config: {

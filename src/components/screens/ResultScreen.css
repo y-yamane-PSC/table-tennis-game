@@ -1,59 +1,124 @@
 .result-screen {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: var(--spacing-large);
-  gap: var(--spacing-large);
+  gap: 14px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  overflow: hidden;
 }
 
+/* 結果メッセージ（タイトル・アイコン） */
 .result-message {
   text-align: center;
-  margin-bottom: var(--spacing-large);
-}
-
-.result-title {
-  font-size: 64px;
-  color: var(--color-text-dark);
-  margin-bottom: var(--spacing-medium);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.result-subtitle {
-  font-size: var(--font-size-medium);
-  color: var(--color-text-dark);
-  margin-bottom: var(--spacing-medium);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.82);
+  border: 3px solid #ffb6c1;
+  border-radius: 20px;
+  padding: 12px 28px;
+  box-shadow: 0 6px 18px rgba(255, 105, 180, 0.2);
 }
 
 .result-icon {
-  font-size: 80px;
-  margin: var(--spacing-medium) 0;
+  font-size: 52px;
   animation: bounce 1s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50%       { transform: translateY(-8px); }
+}
+
+.result-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.result-title {
+  font-size: 48px;
+  font-weight: 900;
+  color: #d63384;
+  margin: 0;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.8);
+  line-height: 1.1;
+}
+
+.result-subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #555;
+  margin: 0;
 }
 
 .result-encouragement {
-  font-size: var(--font-size-medium);
-  color: var(--color-text-dark);
-  margin-top: var(--spacing-medium);
+  font-size: 15px;
+  color: #888;
+  margin: 0;
 }
 
+/* ハイスコア統計ボックス */
+.result-stats {
+  background: rgba(255, 255, 255, 0.85);
+  border: 3px solid #ffb6c1;
+  border-radius: 20px;
+  padding: 12px 24px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  box-shadow: 0 6px 18px rgba(255, 105, 180, 0.2);
+}
+
+.result-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.result-stat-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c2185b;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.result-stat-value {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #333;
+  line-height: 1;
+}
+
+.result-stat-value small {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #888;
+  margin-left: 1px;
+}
+
+.result-stat-divider {
+  width: 2px;
+  background: #ffb6c1;
+  border-radius: 2px;
+  align-self: stretch;
+}
+
+/* ボタン横並び */
 .result-actions {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-medium);
-  margin: 20px 0;
+  flex-direction: row;
+  gap: 14px;
+  align-items: center;
 }
-
-.result-actions button {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-medium);
-  margin: 10px 0;
-}
-

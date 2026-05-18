@@ -1,20 +1,24 @@
 import { useEffect } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
+import { useSoundContext } from '../../contexts/SoundContext';
 import Button from '../ui/Button';
 import './HomeScreen.css';
 
 function HomeScreen() {
     const { navigateTo } = useScreen();
-    const { gameState, setGameState } = useGame();
+    const { setGameState } = useGame();
+    const { sound, soundEnabled } = useSoundContext();
+
+    // ゲーム画面やリザルト画面でBGMが止まった後、ホームに戻ったときに再開する
+    useEffect(() => {
+        if (soundEnabled) sound.startBGM();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleStart = () => {
-        setGameState(prev => ({
-            ...prev,
-            config: {
-                ...prev.config,
-            },
-        }));
+        sound.playButton();
+        setGameState(prev => ({ ...prev, config: { ...prev.config } }));
         navigateTo('difficulty');
     };
 
@@ -49,7 +53,14 @@ function HomeScreen() {
                     </Button>
                     <Button
                         variant="primary"
-                        onClick={() => navigateTo('changelog')}
+                        onClick={() => { sound.playButton(); navigateTo('tutorial'); }}
+                        className="main-changelog-button"
+                    >
+                        あそびかた
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => { sound.playButton(); navigateTo('changelog'); }}
                         className="main-changelog-button"
                     >
                         へんこう りれき

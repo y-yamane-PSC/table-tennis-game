@@ -32,9 +32,10 @@ export const updatePlayerRacket = (
     nextY += moveSpeed * deltaTime;
   }
 
-  // 画面端の衝突判定（Canvasサイズ 1280px x 720px）
-  const minX = 0;
-  const maxX = CANVAS_WIDTH - current.width;
+  // ラケットはコート端のボールにも届けるため、キャンバス外へ60pxはみ出しを許容する
+  const OVERHANG = 60;
+  const minX = -OVERHANG;
+  const maxX = CANVAS_WIDTH - current.width + OVERHANG;
   nextX = Math.max(minX, Math.min(maxX, nextX));
 
   const minY = 0;

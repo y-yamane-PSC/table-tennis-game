@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useScreen } from '../../contexts/ScreenContext';
 import { useGame } from '../../contexts/GameContext';
+import { useSoundContext } from '../../contexts/SoundContext';
 import { RacketType } from '../../types/game';
 import Button from '../ui/Button';
 import normalImgSrc from '../../assets/images/normal.png';
@@ -10,33 +11,26 @@ import './RacketSelectScreen.css';
 
 function RacketSelectScreen() {
   const { navigateTo } = useScreen();
-  const { gameState, setGameState } = useGame();
+  const { setGameState } = useGame();
+  const { sound } = useSoundContext();
   const [selectedRacket, setSelectedRacket] = useState<RacketType>('normal');
 
   const handleRacketSelect = (racketType: RacketType) => {
+    sound.playButton();
     setSelectedRacket(racketType);
   };
 
   const handleConfirm = () => {
-    // ラケット設定をstateに反映
+    sound.playButton();
     setGameState(prev => ({
       ...prev,
-      config: {
-        ...prev.config,
-        racketType: selectedRacket,
-      },
+      config: { ...prev.config, racketType: selectedRacket },
     }));
-    // 選択したラケット情報だけを渡して次画面へ
     navigateTo('game');
   };
 
   const handleBack = () => {
-    setGameState(prev => ({
-      ...prev,
-      config: {
-        ...prev.config,
-      },
-    }));
+    sound.playButton();
     navigateTo('difficulty');
   };
 

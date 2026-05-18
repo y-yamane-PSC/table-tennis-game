@@ -1,24 +1,39 @@
 import { useState, useCallback } from 'react';
 import { ScreenContext } from './contexts/ScreenContext';
 import { GameContext } from './contexts/GameContext';
+import { SoundProvider, useSoundContext } from './contexts/SoundContext';
 import HomeScreen from './components/screens/HomeScreen';
 import DifficultyScreen from './components/screens/DifficultyScreen'
 import RacketSelectScreen from './components/screens/RacketSelectScreen';
 import GameScreen from './components/screens/GameScreen';
 import ResultScreen from './components/screens/ResultScreen';
 import ChangelogScreen from './components/screens/ChangelogScreen';
+import TutorialScreen from './components/screens/TutorialScreen';
 import { Screen, GameState, GameConfig } from './types/game';
+import './styles/app.css';
 
-function App() {
+// グローバルサウンドボタン（全画面共通）
+function GlobalSoundButton() {
+  const { soundEnabled, toggleSound } = useSoundContext();
+  return (
+    <button
+      className={`global-sound-btn ${soundEnabled ? 'sound-on' : 'sound-off'}`}
+      onClick={toggleSound}
+      aria-label={soundEnabled ? 'サウンドをオフにする' : 'サウンドをオンにする'}
+    >
+      {soundEnabled ? '♪ ON' : '♪ OFF'}
+    </button>
+  );
+}
+
+function AppInner() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
 
-  // configのstate
   const [config, setConfig] = useState<GameConfig>({
     difficulty: 'normal',
     racketType: 'normal',
   });
 
-  // gameStateのstate。必ず最新のconfigを参照するようにする
   const [gameState, setGameState] = useState<GameState>({
     playerScore: 0,
     cpuScore: 0,
@@ -26,22 +41,20 @@ function App() {
     isGameActive: false,
     isPaused: false,
     config: config,
+    isInputFrozen: false,
     lastScorer: null,
+    pointScoredBy: null,
   });
 
-  // config更新時にgameState内のconfigも同期させる
-  const handleSetConfig = useCallback((newConfig: GameConfig) => {
-    setConfig(newConfig);
-    // configだけ更新したい場合は上書き、それ以外のstateは維持
-    setGameState((prev) => ({
-      ...prev,
-      config: newConfig,
-    }));
+  // navigateTo を useCallback でメモ化（毎レンダーで再生成されないようにする）
+  const navigateTo = useCallback((screen: Screen) => {
+    setCurrentScreen(screen);
   }, []);
 
-  const navigateTo = (screen: Screen) => {
-    setCurrentScreen(screen);
-  };
+  const handleSetConfig = useCallback((newConfig: GameConfig) => {
+    setConfig(newConfig);
+    setGameState((prev) => ({ ...prev, config: newConfig }));
+  }, []);
 
   return (
     <ScreenContext.Provider value={{ currentScreen, navigateTo }}>
@@ -49,16 +62,28 @@ function App() {
         gameState,
         setGameState,
         config,
-        setConfig: handleSetConfig
+        setConfig: handleSetConfig,
       }}>
-        {currentScreen === 'home' && <HomeScreen />}
-        {currentScreen === 'difficulty' && <DifficultyScreen />}
+        {/* 全画面共通のサウンドボタン */}
+        <GlobalSoundButton />
+
+        {currentScreen === 'home'         && <HomeScreen />}
+        {currentScreen === 'difficulty'   && <DifficultyScreen />}
         {currentScreen === 'racketSelect' && <RacketSelectScreen />}
-        {currentScreen === 'game' && <GameScreen />}
-        {currentScreen === 'result' && <ResultScreen />}
-        {currentScreen === 'changelog' && <ChangelogScreen />}
+        {currentScreen === 'game'         && <GameScreen />}
+        {currentScreen === 'result'       && <ResultScreen />}
+        {currentScreen === 'changelog'    && <ChangelogScreen />}
+        {currentScreen === 'tutorial'     && <TutorialScreen />}
       </GameContext.Provider>
     </ScreenContext.Provider>
+  );
+}
+
+function App() {
+  return (
+    <SoundProvider>
+      <AppInner />
+    </SoundProvider>
   );
 }
 

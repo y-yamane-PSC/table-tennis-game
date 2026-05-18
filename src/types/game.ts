@@ -4,7 +4,7 @@ export type RacketType = 'normal' | 'power' | 'wide';
 
 export type BallType = 'normal' | 'strawberry' | 'heart' | 'star' | 'candy' | 'ribbon';
 
-export type Screen = 'home' | 'difficulty' | 'racketSelect' | 'game' | 'result' | 'changelog';
+export type Screen = 'home' | 'difficulty' | 'racketSelect' | 'game' | 'result' | 'changelog' | 'tutorial';
 
 
 export interface GameConfig {
@@ -18,8 +18,10 @@ export interface GameState {
   rallyCount: number;
   isGameActive: boolean;
   isPaused: boolean;
+  isInputFrozen: boolean;
   config: GameConfig;
   lastScorer: 'player' | 'cpu' | null;
+  pointScoredBy: 'player' | 'cpu' | null;
 }
 
 

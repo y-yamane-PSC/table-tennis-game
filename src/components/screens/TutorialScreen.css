@@ -1,0 +1,188 @@
+.tutorial-screen {
+  /* body { overflow: hidden } を回避するため fixed で独自スクロール */
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  box-sizing: border-box;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  /* 背景を body と合わせる */
+  background-image: url('../../assets/images/img.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  z-index: 10;
+}
+
+.tutorial-container {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tutorial-title {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 4px 8px #ff1493,
+    0 -2px 6px #ff69b4,
+    2px 0 6px #ff69b4,
+    -2px 0 6px #ff69b4;
+  margin: 0 0 8px;
+}
+
+.tutorial-section {
+  background: rgba(255, 255, 255, 0.82);
+  border: 3px solid rgba(255, 182, 193, 0.8);
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.18);
+}
+
+.tutorial-section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #d63384;
+  margin: 0 0 14px;
+  border-bottom: 2px dashed #ffb6c1;
+  padding-bottom: 8px;
+}
+
+/* ルールボックス */
+.tutorial-rule-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #444;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.tutorial-rule-box strong {
+  color: #e91e8c;
+  font-size: 1.3em;
+}
+
+/* 操作グリッド */
+.tutorial-controls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tutorial-control-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tutorial-key {
+  display: inline-block;
+  background: linear-gradient(135deg, #fff0f8, #ffe4ef);
+  border: 2px solid #ff69b4;
+  border-radius: 10px;
+  padding: 4px 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #c2185b;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 3px 0 #ffb6c1;
+}
+
+.tutorial-key-desc {
+  font-size: 1.05rem;
+  color: #444;
+  font-weight: 600;
+}
+
+.tutorial-smash-hint {
+  background: linear-gradient(135deg, #fff9c4, #fff176);
+  border: 2px solid #ffd54f;
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: #6d4c00;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 特殊ボールグリッド */
+.tutorial-balls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutorial-ball-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #fff0f8, #f8eaff);
+  border: 2px solid #ffb6c1;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.tutorial-ball-icon {
+  font-size: 2.4rem;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+
+.tutorial-ball-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tutorial-ball-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #c2185b;
+}
+
+.tutorial-ball-effect {
+  font-size: 0.98rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.tutorial-ball-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.tutorial-ball-duration {
+  font-size: 0.88rem;
+  color: #888;
+  font-weight: 600;
+}
+
+.tutorial-ball-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.88;
+  white-space: nowrap;
+}
+
+.tutorial-back-btn {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}

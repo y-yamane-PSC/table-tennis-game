@@ -131,3 +131,7 @@
   text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
   margin: 0;
 }
+
+.main-changelog-button {
+  width: 260px;
+}
